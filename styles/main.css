@@ -1,0 +1,110 @@
+.swiper-slide {
+  height: auto !important; /* auto layout fix */
+}
+
+.swiper-wrapper {
+  align-items: stretch; /* force all slides same height */
+}
+
+/* Added custom 3D effects and asymmetric border radius styles */
+.auth-card {
+  border-radius: 2rem 0.5rem 2rem 0.5rem; /* Asymmetric border radius - left top and bottom right */
+  box-shadow:
+    0 25px 50px -12px rgba(118, 73, 121, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: perspective(1000px) rotateX(2deg);
+  transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+  box-shadow:
+    0 35px 60px -12px rgba(118, 73, 121, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.input-3d {
+  /* border: 2px solid #e5e7eb; */
+  border-radius: 1rem;
+  border-color: #764979;
+  color: black !important;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  /* padding: 0.75rem 1rem; */
+}
+
+.input-3d:focus {
+  border-color: #764979 !important;
+  outline: none !important;
+  box-shadow:
+    inset 2px 2px 5px rgba(118, 73, 121, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8),
+    0 0 0 3px rgba(118, 73, 121, 0.1),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.button-3d {
+  border-radius: 1rem 0.25rem 1rem 0.25rem;
+  box-shadow:
+    0 4px 8px rgba(118, 73, 121, 0.3),
+    0 2px 4px rgba(118, 73, 121, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-3d:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 12px rgba(118, 73, 121, 0.4),
+    0 4px 8px rgba(118, 73, 121, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.button-3d:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(118, 73, 121, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-3d::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.button-3d:hover::before {
+  left: 100%;
+}
+
+/* Floating animation for decorative images */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.absolute img {
+  animation: float 6s ease-in-out infinite;
+}
