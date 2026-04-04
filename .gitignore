@@ -15,6 +15,15 @@
 # production
 /build
 
+
+# local env files
+.env*.local
+
+# env all
+.env
+.env.local
+.env.*.local
+
 # misc
 .DS_Store
 *.pem
