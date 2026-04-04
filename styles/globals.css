@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
-@config "../tailwind.config.js"
+@config "../tailwind.config.js";
 
+/* hide scrollbar global */
+/* Hide scrollbar for Chrome, Edge, Safari */
+::-webkit-scrollbar {
+    display: none;
+}
 
+/* Hide scrollbar for Firefox */
+html {
+    scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE & old Edge */
+body {
+    -ms-overflow-style: none;
+}
+
+.button {
+    @apply !rounded-tl-3xl !rounded-tr-none !rounded-br-3xl !rounded-bl-none;
+}

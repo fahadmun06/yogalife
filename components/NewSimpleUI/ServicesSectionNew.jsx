@@ -10,49 +10,37 @@ import { motion } from "framer-motion";
 const services = [
   {
     title: "1:1 Health Coaching",
-    desc: "Get personalized support designed around your lifestyle, goals, and challenges. Together, we’ll focus on building sustainable habits that fuel your body, support your wellness, and create lasting transformation from the inside out.",
-    img: "img2.jpg",
-    link: "#",
-  },
-  {
-    title: "Daily Workouts Videos",
-    desc: "Workout Video Library. Access a complete library of Pilates, Strength, Yoga, Sweat, Power, and Stretch workouts, with fresh content added every week. Enjoy daily workout videos that blend Pilates and strength training to keep your body strong, balanced, and energized. Move anytime, anywhere, and experience the freedom of making movement a part of your daily life.",
-    img: "img3.jpg",
-    link: "#",
-  },
-  {
-    title: "100+ Dietitian-Approved Recipes",
-
-    desc: "Choose from over 100 nourishing meal plans featuring whole foods, Jamaican-inspired dishes, and delicious vegan, pescatarian, vegetarian, and gluten-free options all designed to fuel your body and support gut health.",
-
-    img: "/books/img5.jpg",
-    link: "#",
-  },
-  {
-    title: "Pilates x Strength x Sculpt at Rehab Oasis Studio",
-    desc: "Join us for <strong>Pilates sessions, strength training, and sculpting movements</strong> designed to tone, strengthen, and energize your body. Whether you’re looking to improve flexibility, build strength, or move mindfully, our sessions at Rehab Oasis Studio crafted to help you feel your best. <br /> <br /> <strong>Move. Strengthen. Sculpt. Transform.</strong>",
+    desc: "Get personalized support designed around your goals and lifestyle.<br/><br/>Together, we build sustainable habits that support gut health, balanced hormones, and long-term transformation from the inside out.",
     img: "img2.jpg",
     isHtml: true,
     link: "#",
   },
   {
-    title: "Wellness Club",
-    desc: "<strong>Step into your holistic sanctuary, a space where wellness meets joy. Move, breathe, and strengthen your body with our Pilates classes, dive into nourishing workshops, and recharge with rejuvenating retreats. <br /> <br /> Our Wellness Club is more than just a program, it's a community, a lifestyle, and your personal hub for feeling vibrant, balanced, and fully alive. <br /> <br /> Come for the movement. Stay for the magic. Join the Wellness Club</strong>",
+    title: "Daily Workout Videos",
+    desc: "Access a full library of Pilates, Strength, Sculpt, and Stretch workouts with new classes added weekly.<br/><br/>Move anytime, anywhere. Build strength, improve alignment, and stay consistent with guided sessions designed for real results.",
     img: "Picture2.jpg",
     isHtml: true,
     link: "#",
   },
   {
-    title: "Supportive Community",
-    desc: "Stay accountable with a comment section for connection and wins. Plus, enjoy access to a LIVE community workout to keep the energy high.",
+    title: "100+ Nourishing, Dietitian-Approved Recipes",
+    desc: "Choose from over 100 whole-food recipes inspired by Jamaican flavors and global wellness.<br/><br/>Designed to fuel your body, balance blood sugar, and support gut health - without restriction.",
+    img: "/healthy_food_bowl.webp", // Updated from generation
+    isHtml: true,
+    link: "#",
+  },
+  {
+    title: "Destination Wellness Retreats",
+    desc: "Escape to curated wellness experiences in stunning locations.<br/><br/>Move, nourish, and restore through Pilates, strength training, and holistic living practices designed to transform you from the inside out.<br/><br/>🌿 Limited spaces available.<br/>✨ Join the retreat waitlist.",
     img: "img8.jpg",
+    isHtml: true,
     link: "#",
   },
 ];
 
 export default function ServicesSectionNew() {
   return (
-    <section className="py-20 bg-white relative">
+    <section className="py-20 bg-[#FCF6F5] relative">
       <div className="container mx-auto px-4">
         {/* Heading */}
         <motion.div
@@ -62,18 +50,14 @@ export default function ServicesSectionNew() {
           viewport={{ once: true }}
           whileInView={{ opacity: 1, y: 0 }}
         >
-          <h4 className="text-sm uppercase tracking-wider text-primary ">
-            Our Services
-          </h4>
-          <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2">
-            Get Coach Wherever You Want Whenever You Need
+          <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2 text-[#413625]">
+            Whenever You Need It
           </h2>
           <p className="mt-4 text-gray-600 ">
-            Your wellness journey should fit seamlessly into your life. That’s
-            why our programs are fully accessible anytime, anywhere — whether
-            you’re at home, traveling, or on the go. With flexible coaching,
-            guided workouts, nourishing meal plans, and mindfulness tools, you
-            can stay consistent without feeling restricted.
+            Your wellness journey should flow with your life - not compete with
+            it. Our programs are accessible anywhere, anytime. Whether you&apos;re at
+            home, traveling, or on the go, you&apos;ll stay consistent without feeling
+            restricted.
           </p>
         </motion.div>
 
@@ -100,19 +84,18 @@ export default function ServicesSectionNew() {
             spaceBetween={24}
           >
             {services.map((s, i) => (
-              <SwiperSlide key={i} className="py-3 px-2 h-full">
+              <SwiperSlide key={i} className="py-3 px-0 h-full">
                 <motion.div
-                  className="bg-white rounded-tl-[50px] rounded-br-[50px] overflow-hidden group transition border border-gray-200 shadow-sm hover:shadow-lg h-full flex flex-col"
+                  className="bg-[#FCF6F5] rounded-tl-[50px] rounded-2xl rounded-tr-none  overflow-hidden group transition border border-gray-200 shadow-sm hover:shadow-md h-full flex flex-col"
                   initial={{ opacity: 0, y: 40 }}
                   transition={{ duration: 0.6, delay: i * 0.2 }}
                   viewport={{ once: true }}
                   whileInView={{ opacity: 1, y: 0 }}
                 >
-                  {/* Image */}
                   <div className="overflow-hidden relative">
                     <img
                       alt={s.title}
-                      className={`w-full h-60 ${s.img !== "Picture2.jpg " ? "object-cover" : "object-contain"}  group-hover:scale-105 transition-transform duration-500`}
+                      className={`w-full h-52 ${s.img !== "Picture2.jpg " ? "object-cover" : "object-contain"}  group-hover:scale-105 transition-transform duration-500`}
                       src={s.img}
                     />
                     {/* {s.img === "Picture2.jpg" && (
@@ -132,8 +115,8 @@ export default function ServicesSectionNew() {
                       {s.title}
                     </motion.h3>
 
-                    <motion.p
-                      className="text-gray-500 text-sm mt-2 flex-grow"
+                    <motion.div
+                      className="text-gray-500 text-sm mt-4 flex-grow leading-relaxed"
                       initial={{ opacity: 0, y: 20 }}
                       transition={{ duration: 0.5, delay: i * 0.4 }}
                       viewport={{ once: true }}
@@ -144,17 +127,17 @@ export default function ServicesSectionNew() {
                       ) : (
                         s.desc
                       )}
-                    </motion.p>
+                    </motion.div>
 
                     {/* Button fixed bottom */}
-                    <motion.a
+                    {/* <motion.a
                       className="mt-6 inline-block bg-[#E1CCAD] cursor-pointer rounded-tl-3xl rounded-br-3xl text-[#413625] px-6 py-3 font-medium transition hover:bg-[#d9b88f] self-start"
                       href={s.link}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       Read More
-                    </motion.a>
+                    </motion.a> */}
                   </div>
                 </motion.div>
               </SwiperSlide>

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 export default function AboutSectionNew() {
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform";
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 items-center gap-12">
@@ -20,7 +21,7 @@ export default function AboutSectionNew() {
           <div
             className="absolute top-4 left-4 w-full max-w-[570px] h-full max-h-[570px] 
                rounded-tl-[50px] rounded-br-[50px] 
-               bg-gradient-to-br from-[#E1CCAD] to-[#d9b88f] z-0"
+               bg-[#F4EDF5] z-0"
           />
 
           {/* Main Image */}
@@ -35,7 +36,7 @@ export default function AboutSectionNew() {
           />
 
           {/* Decorative overlay image */}
-          <motion.img
+          {/* <motion.img
             alt="Design Element"
             className="absolute -bottom-10 -right-10 w-[180px] md:w-[250px] hidden md:block z-20"
             initial={{ opacity: 0, rotate: -30, scale: 0.8 }}
@@ -43,7 +44,7 @@ export default function AboutSectionNew() {
             transition={{ duration: 1, ease: "easeOut" }}
             viewport={{ once: true }}
             whileInView={{ opacity: 1, rotate: 0, scale: 1 }}
-          />
+          /> */}
         </motion.div>
 
         {/* Right Content */}
@@ -135,10 +136,10 @@ export default function AboutSectionNew() {
           </motion.p>
 
           <motion.a
-            className="mt-6 inline-block bg-[#E1CCAD] cursor-pointer rounded-tl-3xl rounded-br-3xl text-[#413625] px-6 py-3 font-medium transition hover:bg-[#d9b88f]"
+            className="mt-6 inline-block bg-primary cursor-pointer rounded-tl-3xl rounded-br-3xl text-white px-6 py-3 font-medium transition hover:bg-primary/90"
             href={FORM_URL}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
+            // whileHover={{ scale: 1.08 }}
+            // whileTap={{ scale: 0.95 }}
           >
             Get Started
           </motion.a>

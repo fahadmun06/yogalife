@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 "use client";
 
-import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/hooks/useAuth";
 import { formatSubscriptionInfo } from "@/utils/subscriptionUtils";
 
 export default function SubscriptionStatus() {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   if (!user?.packageDetails) {
     return (

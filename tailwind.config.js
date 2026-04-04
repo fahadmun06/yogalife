@@ -22,6 +22,7 @@ const config = {
       fontFamily: {
         playfair: ["var(--font-playfair)"],
         poppins: ["var(--font-poppins)"],
+        alexBrush: ["var(--font-alex-brush)"],
       },
     },
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@heroui/button";
@@ -11,573 +11,649 @@ import {
   ModalBody,
   ModalFooter,
 } from "@heroui/modal";
-
+import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 
-import { useUser } from "@/context/UserContext";
+import ApiFunction from "./api/apiFuntions";
+import { packageApi, stripeApi } from "./api/ApiRoutesFile";
+
+import { useAuth } from "@/hooks/useAuth";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
 );
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
+const buttonVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      delay: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
+
 export default function SubscriptionPage() {
-  const { user } = useUser();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const { post, get } = ApiFunction();
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [actionType, setActionType] = useState(null); // 'checkout' or 'trial'
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
+  // Payment Methods & Upgrade States
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [defaultCardId, setDefaultCardId] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedPkgId, setSelectedPkgId] = useState(null);
+
+  const subStatus = user?.subscription?.status;
+  const canTrial =
+    !user?.subscription?.trial?.isClaimed ||
+    subStatus === "expired" ||
+    subStatus === "canceled" ||
+    subStatus === "free" ||
+    subStatus === "none";
+
+  const showTrialButton =
+    !subStatus || ["free", "expired", "canceled", "none"].includes(subStatus);
+
+  const selectedInfo = selectedPlan
+    ? packages.find((p) => p.name.toLowerCase() === selectedPlan.toLowerCase())
+    : null;
+
+  useEffect(() => {
+    fetchPackages();
+    handlePaymentSuccess();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPaymentData();
+    }
+  }, [isAuthenticated]);
+
+  const fetchPaymentData = async () => {
+    try {
+      const pmRes = await get(stripeApi.getPaymentMethods);
+      const fetchedPms = pmRes.data?.data || pmRes.data || [];
+      const defaultId = pmRes.data?.defaultId || null;
+      setPaymentMethods(fetchedPms);
+      if (defaultId) {
+        setDefaultCardId(defaultId);
+      } else if (fetchedPms.length > 0) {
+        setDefaultCardId(fetchedPms[0].id);
+      }
+    } catch (err) {
+      console.error("Error fetching payment methods:", err);
+    }
   };
 
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: 50,
-      scale: 0.8,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
+  const fetchPackages = async () => {
+    try {
+      const res = await get(packageApi.getAll);
+
+      if (res.success) {
+        setPackages(res.data);
+      }
+    } catch (err) {
+      console.error("Error fetching packages:", err);
+    }
   };
 
-  const buttonVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: 0.8,
-        type: "spring",
-        stiffness: 100,
-      },
-    },
+  const handlePaymentSuccess = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get("success");
+    const sessionId = params.get("session_id");
+
+    if (success === "true" && sessionId) {
+      try {
+        const res = await post(stripeApi.confirmSubscription, { sessionId });
+
+        if (res.success) {
+          toast.success("Subscription confirmed! Welcome aboard.");
+          router.push("/dashboard");
+        }
+      } catch {
+        toast.error("Failed to confirm subscription.");
+      }
+    }
   };
+
   const onCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPlan(null);
   };
 
-  // derive selected plan details for the modal
-  const selectedInfo = selectedPlan
-    ? {
-        name:
-          selectedPlan === "monthly"
-            ? "Monthly Plan"
-            : selectedPlan === "quarterly"
-            ? "Quarterly Plan"
-            : "Yearly Plan",
-        price:
-          selectedPlan === "monthly"
-            ? 7500
-            : selectedPlan === "quarterly"
-            ? 22500
-            : 75500,
-        durationDays:
-          selectedPlan === "monthly" ? 30 : selectedPlan === "quarterly" ? 90 : 365,
-      }
-    : null;
+  const handleConfirmUpgrade = async () => {
+    if (!defaultCardId) return;
 
-  async function handleCheckout(plan) {
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-    // console.log("user", user);
     try {
-      // Check if user already has an active subscription
-      if (user?.packageDetails && user.packageDetails.subStatus === "active") {
-        setSelectedPlan(plan);
-        setIsModalOpen(true);
-
-        return;
-      }
-
-      // Store selected plan details in localStorage for success page
-      const planDetails = {
-        packageName:
-          plan === "monthly"
-            ? "Monthly Plan"
-            : plan === "quarterly"
-            ? "Quarterly Plan"
-            : "Yearly Plan",
-        duration: plan === "monthly" ? 30 : plan === "quarterly" ? 90 : 365,
-        price: plan === "monthly" ? 7500 : plan === "quarterly" ? 22500 : 75500,
-        planType: plan,
-
-        currency: "JMD",
-        trialDaysLeft: 7,
-        trialStatus: "active",
-        selectedAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem("selectedPlan", JSON.stringify(planDetails));
-      console.log("Stored plan details:", planDetails);
-
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan,
-          userId: user.uid,
-          userEmail: user.email,
-        }),
+      setActionLoading(true);
+      const res = await post(stripeApi.upgradeWithSavedCard, {
+        packageId: selectedPkgId,
+        paymentMethodId: defaultCardId,
       });
 
-      const contentType = res.headers.get("content-type") || "";
+      if (res.success) {
+        toast.success("Upgrade successful!");
+        setIsConfirmModalOpen(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Payment failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-      if (!contentType.includes("application/json")) {
-        const text = await res.text();
+  const handleCancel = async () => {
+    try {
+      setActionLoading(true);
+      await post(stripeApi.cancelSubscription);
+      toast.success("Subscription canceled successfully");
+      setIsCancelModalOpen(false);
+      window.location.reload();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to cancel subscription",
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-        throw new Error(text?.slice(0, 300) || "Unexpected non-JSON response");
+  const handleTrialAction = async () => {
+    if (!isAuthenticated) return router.push("/auth/login");
+
+    const status = user?.subscription?.status;
+    if (status === "paused") {
+      setLoading(true);
+      setActionType("trial");
+      try {
+        const res = await post(stripeApi.resumeTrial);
+        if (res.success) {
+          updateUser(res.data);
+          toast.success("Trial resumed!");
+        }
+      } catch {
+        toast.error("Failed to resume trial.");
+      } finally {
+        setLoading(false);
+        setActionType(null);
+      }
+      return;
+    }
+
+    if (status === "trialing") {
+      setLoading(true);
+      setActionType("trial");
+      try {
+        const res = await post(stripeApi.pauseTrial);
+        if (res.success) {
+          updateUser(res.data);
+          toast.success("Trial paused.");
+        }
+      } catch {
+        toast.error("Failed to pause trial.");
+      } finally {
+        setLoading(false);
+        setActionType(null);
+      }
+      return;
+    }
+
+    // Otherwise, open modal to select a plan for the 7-day trial
+    setIsTrialModalOpen(true);
+  };
+
+  const getTrialButtonLabel = () => {
+    const status = user?.subscription?.status;
+    const isClaimed = user?.subscription?.trial?.isClaimed;
+
+    if (
+      !isClaimed ||
+      status === "expired" ||
+      status === "canceled" ||
+      status === "none" ||
+      status === "free"
+    )
+      return "START YOUR 7 DAY FREE TRIAL";
+    if (status === "trialing") return "PAUSE YOUR TRIAL";
+    if (status === "paused") return "RESUME YOUR TRIAL";
+
+    return "START YOUR 7 DAY FREE TRIAL";
+  };
+
+  const handlePlanSelection = async (pkg) => {
+    if (!isAuthenticated) return router.push("/auth/login");
+
+    try {
+      setLoading(true);
+      setActionType("checkout");
+      setSelectedPlan(pkg.name);
+      setIsTrialModalOpen(false);
+
+      if (
+        user?.subscription?.status === "active" ||
+        user?.subscription?.status === "trialing"
+      ) {
+        const isCurrent =
+          (user?.subscription?.billing?.planId?._id ||
+            user?.subscription?.billing?.planId) === pkg._id;
+
+        if (isCurrent) {
+          setIsCancelModalOpen(true);
+          setLoading(false);
+          setActionType(null);
+          return;
+        }
+
+        if (paymentMethods.length > 0 && defaultCardId) {
+          setSelectedPkgId(pkg._id);
+          setIsConfirmModalOpen(true);
+          setLoading(false);
+          setActionType(null);
+          return;
+        }
       }
 
-      const data = await res.json();
+      const res = await post(stripeApi.createSubscriptionSession, {
+        packageId: pkg._id,
+        trialEnabled: canTrial,
+      });
 
-      if (!res.ok) throw new Error(data?.error || "Failed to create session");
-
-      const stripe = await stripePromise;
-
-      if (!stripe) throw new Error("Stripe failed to initialize");
-
-      await stripe.redirectToCheckout({ sessionId: data.id });
+      if (res.success && res.id) {
+        const stripe = await stripePromise;
+        if (!stripe) throw new Error("Stripe failed to initialize");
+        await stripe.redirectToCheckout({ sessionId: res.id });
+      } else {
+        throw new Error(res.message || "Checkout failed");
+      }
     } catch (err) {
-      console.error("Checkout error:", err);
-      alert(err?.message || "Something went wrong starting checkout.");
+      toast.error(
+        err?.response?.data?.message || err.message || "Checkout error",
+      );
+    } finally {
+      setLoading(false);
+      setActionType(null);
     }
-  }
+  };
+
+  const PricingCard = ({ pkg, isPopular = false }) => {
+    const isCurrent =
+      (user?.subscription?.billing?.planId?._id ||
+        user?.subscription?.billing?.planId) === pkg._id &&
+      (subStatus === "active" || subStatus === "trialing");
+
+    const hasActiveSubscription =
+      subStatus === "active" || subStatus === "trialing";
+
+    return (
+      <motion.div
+        key={pkg._id}
+        className={`w-full max-w-[340px] bg-[#EFE6F5] rounded-[32px] p-2 md:p-2.5 shadow-[12px_12px_24px_#d9cddc,-12px_-12px_24px_#ffffff] h-full flex flex-col relative ${isPopular ? "md:scale-105 z-10" : ""}`}
+        variants={cardVariants}
+      >
+        {isPopular && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#DCCAE5] shadow-[3px_3px_6px_#d1c2d3,-3px_-3px_6px_#ffffff] text-[#4A3B4C] text-[10.5px] font-bold tracking-[0.15em] uppercase py-1.5 px-6 rounded-full z-20 whitespace-nowrap font-sans">
+            Most Popular
+          </div>
+        )}
+        <div className="border-[1.5px] border-[#d1c2d3]/50 rounded-[24px] h-full flex flex-col items-center px-6 py-8 pb-6 text-center bg-[#EFE6F5]">
+          <h2 className="text-[17px] font-playfair font-semibold text-[#4A3B4C] tracking-[0.2em] uppercase">
+            {pkg.name}
+          </h2>
+          <div className="flex items-center justify-center w-full my-4 opacity-70">
+            <div className="h-[1px] w-8 bg-[#4A3B4C]" />
+            <div className="w-[5px] h-[5px] rotate-45 bg-[#4A3B4C] mx-3" />
+            <div className="h-[1px] w-8 bg-[#4A3B4C]" />
+          </div>
+          <div className="mb-4 relative w-full flex flex-col items-center gap-1">
+            <div className="flex items-baseline gap-2">
+              <p className="text-[42px] font-bold text-[#4A3B4C] font-playfair leading-none">
+                {pkg.price?.toLocaleString()}
+              </p>
+              <span className="text-lg font-semibold text-[#4A3B4C] font-sans tracking-wide">
+                {pkg.currency || "JMD"}
+              </span>
+            </div>
+            <p className="text-xs font-bold text-[#4A3B4C]/60 uppercase tracking-widest">
+              per {pkg.durationType?.replace("ly", "")}
+            </p>
+          </div>
+
+          {pkg.description && (
+            <p className="text-sm text-[#4A3B4C]/70 mb-6 font-medium leading-relaxed">
+              {pkg.description}
+            </p>
+          )}
+
+          <ul className="text-[14.5px] font-medium text-[#4A3B4C]/90 space-y-3 mb-8 w-full text-left font-sans tracking-wide flex-grow">
+            {pkg.features?.map((feature, fIdx) => (
+              <li key={fIdx} className="flex items-start gap-3">
+                <div className="w-[20px] h-[20px] rounded-full bg-[#E5D7E6] flex items-center justify-center shrink-0 mt-0.5">
+                  <svg
+                    className="w-3 h-3 text-[#4A3B4C]"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M5 13l4 4L19 7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                {feature}
+              </li>
+            ))}
+          </ul>
+
+          <button
+            className={`w-full mt-auto flex items-center justify-center cursor-pointer py-3.5 rounded-[24px] font-playfair font-semibold text-[17px] tracking-wide transition-all duration-300 ${isCurrent ? "bg-red-500 text-white shadow-md hover:bg-red-600" : isPopular ? "bg-[#B9A1C6] text-white shadow-[3px_3px_8px_#d1c2d3,-3px_-3px_8px_#ffffff] hover:bg-[#AA90AC]" : "bg-[#EBE0EC] border border-[#A78AB7] text-[#4A3B4C] shadow-[3px_3px_6px_#d1c2d3,-3px_-3px_6px_#ffffff] hover:shadow-[4px_4px_8px_#d1c2d3,-4px_-4px_8px_#ffffff]"}`}
+            disabled={loading}
+            onClick={() => handlePlanSelection(pkg)}
+          >
+            {loading &&
+            actionType === "checkout" &&
+            selectedPlan === pkg.name ? (
+              <Spinner color="current" size="sm" />
+            ) : isCurrent ? (
+              "CANCEL PLAN"
+            ) : hasActiveSubscription ? (
+              "UPGRADE"
+            ) : canTrial ? (
+              "START 7 DAY FREE TRIAL"
+            ) : (
+              "CHOOSE PLAN"
+            )}
+          </button>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
-    <div className=" relative my-12 overflow-hidden flex flex-col items-center justify-center p-8">
-      <svg className="absolute" height="0" width="0">
-        <defs>
-          <clipPath id="cloudClip">
-            <path d="M19.35 10.04A7 7 0 0 0 5.64 9.6 5.5 5.5 0 0 0 6 20h13a4 4 0 0 0 .35-9.96z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* <div className="absolute inset-0 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100" />
-      <div className="absolute inset-0 bg-[#d4b5a0]" /> */}
-      <div className="absolute inset-0 bg-primary" />
-      <div className="absolute inset-0 bg-white/50" />
-
-      {/* Content wrapper with relative positioning */}
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Title */}
-        <motion.h1
+    <div className="relative min-h-[90vh] bg-[#F4EDF5] py-20 px-4 md:px-8 flex flex-col items-center justify-center overflow-hidden">
+      <div className="relative z-10 w-full max-w-[1100px] flex flex-col items-center">
+        <motion.div
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold text-black  mb-16 text-center"
+          className="mb-14 text-center flex items-center justify-center gap-4 relative"
           initial={{ opacity: 0, y: -30 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          Subscription Options
-        </motion.h1>
-        {/* <motion.ul
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="text-[#6b574a] mb-10 space-y-2"
-        >
-          <li>• Monthly Membership – 7,500 JMD</li>
-          <li>• Quarterly Membership – 22,500 JMD (Save 1 month)</li>
-          <li>• Yearly Membership – 75,500 JMD (Best Value – Save 3 months)</li>
-        </motion.ul> */}
-
-        {/* Pricing Cards Container */}
+          <h1 className="text-3xl md:text-5xl lg:text-[44px] tracking-wide font-semibold text-[#4A3B4C] font-playfair">
+            Subscription Options
+          </h1>
+        </motion.div>
         <motion.div
           animate="visible"
-          className="flex items-end mx-auto  w-full flex-wrap gap-8 mb-16"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch justify-items-center justify-center w-full gap-8 mb-16"
           initial="hidden"
           variants={containerVariants}
         >
-          <motion.div className="relative mx-auto" variants={cardVariants}>
-            <motion.div
-              className="bg-white rounded-full w-48 h-48 flex flex-col font-poppins items-center justify-center shadow-lg cursor-pointer"
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCheckout("monthly")}
-            >
-              <h2 className="text-xl font-semibold font-poppins text-black mb-2">
-                MONTHLY
-              </h2>
-              <p className="text-base font-bold text-black">7,500 JMD</p>
-            </motion.div>
-            {/* <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-              className="absolute -bottom-12 left-1/2 transform -translate-x-1/2"
-            >
-              <svg className="w-32 h-auto text-[#c2a187]" viewBox="0 0 24 24">
-                <defs>
-                  <filter
-                    id="cloudShadow1"
-                    x="0"
-                    y="0"
-                    width="200%"
-                    height="200%"
-                    filterUnits="userSpaceOnUse"
-                  >
-                    <feDropShadow
-                      dx="0"
-                      dy="2"
-                      stdDeviation="2"
-                      floodColor="black"
-                      floodOpacity="0"
-                    />
-                  </filter>
-                </defs>
-
-                <path
-                  d="M19.35 10.04A7 7 0 0 0 5.64 9.6 5.5 5.5 0 0 0 6 20h13a4 4 0 0 0 .35-9.96z"
-                  fill="currentColor"
-                  filter="url(#cloudShadow1)"
-                />
-              </svg>
-            </motion.div> */}
-          </motion.div>
-
-          <motion.div className="relative mx-auto" variants={cardVariants}>
-            <motion.div
-              className="bg-white  w-48 h-48 flex flex-col font-poppins items-center justify-center shadow-lg cursor-pointer"
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCheckout("quarterly")}
-            >
-              <h2 className="text-xl font-semibold font-poppins text-black mb-2">
-                QUARTERLY
-              </h2>
-              <p className="text-base font-bold text-black">22,500 JMD</p>
-            </motion.div>
-            <motion.div
-              animate={{ scale: 1 }}
-              className="absolute -bottom-12 left-10 transform translate-x-1/2 scale-90"
-              initial={{ scale: 0 }}
-              transition={{ delay: 1, type: "spring", stiffness: 200 }}
-            >
-              <svg className="w-28 h-auto text-[#c2a187]" viewBox="0 0 24 24">
-                <defs>
-                  <filter
-                    filterUnits="userSpaceOnUse"
-                    height="200%"
-                    id="cloudShadow"
-                    width="200%"
-                    x="0"
-                    y="0"
-                  >
-                    <feDropShadow
-                      dx="0"
-                      dy="2"
-                      floodColor="black"
-                      floodOpacity="0.1"
-                      stdDeviation="2"
-                    />
-                  </filter>
-                </defs>
-
-                <path
-                  d="M19.35 10.04A7 7 0 0 0 5.64 9.6 5.5 5.5 0 0 0 6 20h13a4 4 0 0 0 .35-9.96z"
-                  fill="currentColor"
-                  filter="url(#cloudShadow)"
-                />
-
-                <text
-                  className="fill-black font-bold"
-                  fontSize="3"
-                  textAnchor="middle"
-                  x="13"
-                  y="16"
-                >
-                  Save 1 month
-                </text>
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          <motion.div className="relative mx-auto" variants={cardVariants}>
-            <motion.div
-              className="bg-white rounded-full w-48 h-48 flex flex-col items-center justify-center shadow-lg cursor-pointer"
-              style={{
-                transform: "scale(0.9)",
-              }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCheckout("yearly")}
-            >
-              <h2 className="text-xl font-semibold font-poppins text-black mb-2">
-                YEARLY
-              </h2>
-              <p className="text-base font-bold font-poppins text-black">
-                75,500 JMD
-              </p>
-            </motion.div>
-            <motion.div
-              animate={{ scale: 1 }}
-              className="absolute -bottom-12 left-1/4 w-full transform translate-x-1/4 scale-90"
-              initial={{ scale: 0 }}
-              transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
-            >
-              <svg className="w-28 h-auto text-[#c2a187]" viewBox="0 0 100 100">
-                <defs>
-                  <filter
-                    filterUnits="userSpaceOnUse"
-                    height="200%"
-                    id="cloudShadow3"
-                    width="200%"
-                    x="0"
-                    y="0"
-                  >
-                    <feDropShadow
-                      dx="0"
-                      dy="2"
-                      floodColor="black"
-                      floodOpacity="0.3"
-                      stdDeviation="2"
-                    />
-                  </filter>
-                </defs>
-
-                <path
-                  d="M80 40A25 25 0 0 0 20 38 18 18 0 0 0 22 80h56a15 15 0 0 0 2-40z"
-                  fill="currentColor"
-                  filter="url(#cloudShadow3)"
-                />
-
-                <text
-                  className="fill-black font-bold"
-                  fontSize="12"
-                  textAnchor="middle"
-                  x="50"
-                  y="60"
-                >
-                  Save 3 months
-                </text>
-              </svg>
-            </motion.div>
-          </motion.div>
+          {packages.map((pkg) => (
+            <PricingCard
+              key={pkg._id}
+              isPopular={pkg.durationType === "quarterly"}
+              pkg={pkg}
+            />
+          ))}
         </motion.div>
 
-        {/* CTA Button */}
-        <motion.div
-          animate="visible"
-          initial="hidden"
-          variants={buttonVariants}
-        >
-          <button
-            className="bg-white shadow-lg cursor-pointer  border border-[#6b574a] text-[#6b574a]  px-8 py-3 text-sm font-semibold rounded-lg  transition-all duration-200"
-            size="lg"
-            onClick={() => handleCheckout("monthly")}
+        {showTrialButton && (
+          <motion.div
+            animate="visible"
+            className="w-full max-w-[560px] mt-2 mb-8 h-fit"
+            initial="hidden"
+            variants={buttonVariants}
           >
-            <motion.span
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
+              className="w-[95%] mx-auto flex items-center justify-center cursor-pointer bg-[#EBE0EC] border border-[#A78AB7] text-[#4A3B4C] px-8 py-4 text-lg font-playfair font-bold tracking-[0.15em] rounded-[16px] transition-all duration-300 shadow-[4px_4px_8px_#d1c2d3,-4px_-4px_8px_#ffffff] hover:shadow-[6px_6px_12px_#d1c2d3,-6px_-6px_12px_#ffffff] active:shadow-[inset_3px_3px_6px_#d1c2d3,inset_-3px_-3px_6px_#ffffff] uppercase"
+              disabled={loading}
+              onClick={handleTrialAction}
             >
-              START YOUR 7 DAY FREE TRIAL
-            </motion.span>
-          </button>
-        </motion.div>
+              {loading && actionType === "trial" ? (
+                <Spinner color="primary" size="md" />
+              ) : (
+                getTrialButtonLabel()
+              )}
+            </button>
+          </motion.div>
+        )}
       </div>
 
-      {/* Active Subscription Modal */}
+      {/* Already Active Plan Modal */}
       <Modal
-        classNames={{
-          base: "bg-white",
-          header: "border-b border-gray-200",
-          body: "py-4",
-          footer: "border-t border-gray-200",
-        }}
         isOpen={isModalOpen}
         scrollBehavior="inside"
+        backdrop="blur"
         size="md"
         onClose={onCloseModal}
       >
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <div className="w-10 hidden min-h-10 bg-green-100 rounded-full md:flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M5 13l4 4L19 7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  You Already Have an Active Plan
-                </h2>
-                <p className="text-xs text-gray-600">
-                  Review your current plan and the new plan you selected
+        <ModalContent className="bg-white">
+          <ModalHeader className="border-b border-gray-100">
+            <h2 className="text-xl font-semibold text-[#4A3B4C] font-playfair">
+              Existing Subscription
+            </h2>
+          </ModalHeader>
+          <ModalBody className="py-6">
+            <div className="space-y-4">
+              <div className="bg-purple-50 rounded-2xl p-4 border border-purple-100">
+                <h3 className="text-sm font-bold text-[#4A3B4C] mb-2 uppercase tracking-widest">
+                  Active Plan
+                </h3>
+                <p className="text-lg font-semibold text-purple-800">
+                  {user?.subscription?.billing?.planId?.name || "Premium Plan"}
+                </p>
+                <p className="text-xs text-[#4A3B4C]/60 mt-1">
+                  Expiring:{" "}
+                  {new Date(
+                    user?.subscription?.billing?.endDate,
+                  ).toLocaleDateString()}
                 </p>
               </div>
+              <p className="text-sm text-[#4A3B4C]/70 text-center">
+                Your current plan is still active. To change plans, please wait
+                until the end of your current cycle.
+              </p>
             </div>
+          </ModalBody>
+          <ModalFooter className="border-t border-gray-100">
+            <Button color="primary" variant="flat" onPress={onCloseModal}>
+              Got it
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Select Plan Modal (For Trial) */}
+      <Modal
+        isOpen={isTrialModalOpen}
+        scrollBehavior="inside"
+        size="5xl"
+        onClose={() => setIsTrialModalOpen(false)}
+      >
+        <ModalContent className="bg-[#F8F4F9]">
+          <ModalHeader className="flex flex-col items-center pt-8">
+            <h2 className="text-3xl font-playfair font-bold text-[#4A3B4C]">
+              Select Your Trial Plan
+            </h2>
+            <p className="text-[#4A3B4C]/60 text-sm mt-1">
+              Choose the plan you want to experience for 7 days
+            </p>
           </ModalHeader>
+          <ModalBody className="py-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch justify-items-center">
+              {packages.map((pkg) => (
+                <PricingCard
+                  key={pkg._id}
+                  isPopular={pkg.durationType === "quarterly"}
+                  pkg={pkg}
+                />
+              ))}
+            </div>
+          </ModalBody>
+          <ModalFooter className="pb-8">
+            <Button
+              color="danger"
+              variant="light"
+              onPress={() => setIsTrialModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-          <ModalBody>
-            {user?.packageDetails && (
-              <div className="space-y-4">
-                {/* Current Plan Details */}
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
-                  <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4 text-green-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        clipRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        fillRule="evenodd"
-                      />
-                    </svg>
-                    Current Active Plan
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs font-medium text-gray-600">Plan</span>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {user.packageDetails.packageName}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-gray-600">Price</span>
-                        <p className="text-sm font-semibold text-green-600">
-                          JMD {user.packageDetails.price?.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs font-medium text-gray-600">Status</span>
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-800">
-                          {user.packageDetails.subStatus === "active" ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-gray-600">Days Left</span>
-                        <p className="text-sm font-semibold text-blue-600">
-                          {user.packageDetails.daysLeft || 0} days
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <span className="text-xs font-medium text-gray-600">Expires</span>
-                      <p className="text-xs text-gray-900">
-                        {user.packageDetails.endDate
-                          ? new Date(user.packageDetails.endDate).toLocaleDateString()
-                          : "N/A"}
-                      </p>
-                    </div>
-                  </div>
+      {/* Confirm Upgrade Modal */}
+      <Modal
+        backdrop="blur"
+        isOpen={isConfirmModalOpen}
+        size="md"
+        className="font-poppins"
+        onClose={() => setIsConfirmModalOpen(false)}
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1 items-center text-center">
+            <h2 className="text-2xl font-black">Confirm Upgrade</h2>
+            <p className="text-zinc-500 font-medium text-sm mt-1">
+              Are you sure you want to upgrade with this card?
+            </p>
+          </ModalHeader>
+          <ModalBody className="py-2 space-y-4">
+            {paymentMethods.find((pm) => pm.id === defaultCardId) && (
+              <div className="p-5 rounded-2xl border-2 border-[#764979] bg-[#764979]/5 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-[#764979] text-white">
+                  <CheckCircle2 size={24} />
                 </div>
-
-                {/* Selected Plan Details */}
-                {selectedInfo && (
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          clipRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          fillRule="evenodd"
-                        />
-                      </svg>
-                      Plan You Selected
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{selectedInfo.name}</p>
-                        <p className="text-xs text-gray-600">
-                          JMD {selectedInfo.price.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-600">Duration</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {selectedInfo.durationDays} days
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Message */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg
-                        className="h-4 w-4 text-blue-400"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          clipRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          fillRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-2">
-                      <h3 className="text-xs font-medium text-blue-800">Your current plan is still active</h3>
-                      <p className="mt-1 text-xs text-blue-700">
-                        You can continue using your current subscription. To change plan, wait until it expires or contact support.
-                      </p>
-                    </div>
-                  </div>
+                <div>
+                  <p className="font-black capitalize text-lg text-zinc-900 dark:text-white">
+                    {
+                      paymentMethods.find((pm) => pm.id === defaultCardId).card
+                        .brand
+                    }{" "}
+                    ••••{" "}
+                    {
+                      paymentMethods.find((pm) => pm.id === defaultCardId).card
+                        .last4
+                    }
+                  </p>
+                  <p className="text-sm font-semibold text-zinc-500">
+                    Expires{" "}
+                    {
+                      paymentMethods.find((pm) => pm.id === defaultCardId).card
+                        .exp_month
+                    }
+                    /
+                    {
+                      paymentMethods.find((pm) => pm.id === defaultCardId).card
+                        .exp_year
+                    }
+                  </p>
                 </div>
               </div>
             )}
           </ModalBody>
-
-          <ModalFooter>
+          <ModalFooter className="flex-col gap-3 mt-4">
             <Button
-              className="font-medium text-sm"
-              color="default"
-              size="md"
-              variant="light"
-              onPress={onCloseModal}
+              fullWidth
+              className="bg-[#764979] text-white font-bold rounded-xl py-6"
+              isLoading={actionLoading}
+              onPress={handleConfirmUpgrade}
             >
-              Close
+              Confirm & Pay
+            </Button>
+            <Button
+              fullWidth
+              className="font-bold rounded-xl py-6 text-zinc-500 bg-zinc-100 dark:bg-zinc-800"
+              isDisabled={actionLoading}
+              variant="light"
+              onPress={() => {
+                setIsConfirmModalOpen(false);
+                router.push("/dashboard/subscription");
+              }}
+            >
+              Change Card
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <Modal
+        backdrop="blur"
+        isOpen={isCancelModalOpen}
+        size="md"
+        className="font-poppins"
+        onClose={() => setIsCancelModalOpen(false)}
+      >
+        <ModalContent className="rounded-[2.5rem] p-4">
+          <ModalHeader className="flex flex-col gap-1 items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-2">
+              <AlertTriangle className="text-red-500" size={28} />
+            </div>
+            <h2 className="text-xl font-bold">Cancel Subscription</h2>
+          </ModalHeader>
+          <ModalBody className="text-center py-2 space-y-2">
+            <p className="text-zinc-500 font-medium text-sm">
+              Are you sure you want to cancel your subscription? You will lose
+              access to premium features at the end of your billing cycle.
+            </p>
+          </ModalBody>
+          <ModalFooter className="flex-col gap-3 mt-4">
+            <Button
+              fullWidth
+              className="bg-red-500 text-white font-bold rounded-xl py-6"
+              isLoading={actionLoading}
+              onPress={handleCancel}
+            >
+              Yes, Cancel Subscription
+            </Button>
+            <Button
+              fullWidth
+              className="font-bold rounded-xl py-6 text-zinc-500 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200"
+              isDisabled={actionLoading}
+              variant="light"
+              onPress={() => setIsCancelModalOpen(false)}
+            >
+              Keep Subscription
             </Button>
           </ModalFooter>
         </ModalContent>

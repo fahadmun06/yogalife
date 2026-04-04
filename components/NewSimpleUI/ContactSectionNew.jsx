@@ -55,16 +55,7 @@ export default function ContactSectionNew() {
     <section className="md:h-[80vh] bg-white overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 h-full">
         {/* Left Side - Form */}
-        <div
-          className="flex bg-[#E1CCAD] items-center justify-center h-full py-20 md:py-0 px-8"
-          style={{
-            backgroundImage:
-              "url('https://designingmedia.com/yogastic/wp-content/uploads/2022/07/contact-section-design-1.png')",
-            backgroundSize: "200px",
-            backgroundPosition: "left center",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
+        <div className="flex bg-[#F4EDF5] items-center justify-center h-full py-20 md:py-0 px-8 lg:px-16">
           <motion.div
             className="w-full max-w-lg"
             initial={{ opacity: 0, x: -50 }}
@@ -72,10 +63,10 @@ export default function ContactSectionNew() {
             viewport={{ once: true }}
             whileInView={{ opacity: 1, x: 0 }}
           >
-            <h4 className="text-primary font-medium tracking-wider">
+            <h4 className="text-[#98849A] font-medium tracking-wider text-sm uppercase">
               GET IN TOUCH
             </h4>
-            <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2 leading-snug">
+            <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2 leading-snug text-[#4A3B4C]">
               Get a Free Consultation Now
             </h2>
 
@@ -96,11 +87,10 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
-                          errors.firstName
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.firstName
+                          ? "border-red-500"
+                          : "border-gray-300"
+                          }`}
                         placeholder="First Name"
                         type="text"
                       />
@@ -128,9 +118,8 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
-                          errors.lastName ? "border-red-500" : "border-gray-300"
-                        }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.lastName ? "border-red-500" : "border-gray-300"
+                          }`}
                         placeholder="Last Name"
                         type="text"
                       />
@@ -158,9 +147,8 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
-                          errors.phone ? "border-red-500" : "border-gray-300"
-                        }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.phone ? "border-red-500" : "border-gray-300"
+                          }`}
                         placeholder="Phone"
                         type="text"
                       />
@@ -188,9 +176,8 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
-                          errors.email ? "border-red-500" : "border-gray-300"
-                        }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.email ? "border-red-500" : "border-gray-300"
+                          }`}
                         placeholder="Email"
                         type="email"
                       />
@@ -219,9 +206,8 @@ export default function ContactSectionNew() {
                   >
                     <textarea
                       {...field}
-                      className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
-                        errors.message ? "border-red-500" : "border-gray-300"
-                      }`}
+                      className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.message ? "border-red-500" : "border-gray-300"
+                        }`}
                       placeholder="Message"
                       rows="5"
                     />
@@ -235,14 +221,16 @@ export default function ContactSectionNew() {
               />
 
               {/* Button */}
-              <motion.button
-                className="bg-primary cursor-pointer rounded-tl-3xl rounded-br-3xl hover:bg-primary/80 text-white font-medium px-6 py-3 transition-all"
-                type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                Get Started
-              </motion.button>
+              <div className="flex justify-start pt-2">
+                <motion.button
+                  className="bg-[#8E7391] button cursor-pointer rounded-md hover:bg-[#79607D] text-white font-medium px-8 py-3 transition-all"
+                  type="submit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Get Started
+                </motion.button>
+              </div>
             </form>
           </motion.div>
         </div>

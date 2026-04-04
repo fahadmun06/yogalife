@@ -32,7 +32,7 @@ export default function Newsletter() {
         <div className="container  mx-auto px-3 md:px-14">
           <div className="max-w-xl space-y-6">
             <motion.h4
-              className="text-sm font-bold tracking-widest text-primary  uppercase"
+              className="text-sm font-bold tracking-widest text-white/70  uppercase"
               initial={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.6 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -63,15 +63,14 @@ export default function Newsletter() {
                 placeholder="Enter Your Email"
                 type="email"
                 value={email}
-                whileFocus={{ scale: 1.02 }}
                 onChange={(e) => setEmail(e.target.value)}
               />
 
               <motion.button
-                className="bg-primary cursor-pointer w-auto max-w-[200px] text-white px-6 py-3 rounded-tl-3xl rounded-br-3xl font-medium transition hover:bg-[#d9b88f]"
+                className="bg-primary cursor-pointer w-auto max-w-[200px] text-white px-6 py-3 rounded-tl-3xl rounded-br-3xl font-medium transition hover:bg-primary/90"
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                // whileHover={{ scale: 1.05 }}
+                // whileTap={{ scale: 0.95 }}
               >
                 Subscribe
               </motion.button>

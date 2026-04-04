@@ -9,16 +9,15 @@ import RetreatHero from "@/components/RetreatHero";
 import TransformationGallery from "@/components/TransformationGallery";
 import BooksGallery from "@/components/BooksGallery";
 import SubscriptionPage from "@/components/SubscriptionPage";
-import NewRetroSection from "@/components/NewSimpleUI/NewRetroSection";
 
 export const metadata = {
-  title: "Tinashaii",
-  description: "Take Your Yoga to the Next Level",
+  title: "Tinashaii | Take Your Yoga to the Next Level",
+  description: "Join Tinashaii for premium yoga sessions, personalized nutrition plans, and transformative wellness coaching.",
 };
 
 export default function Home() {
   return (
-    <div className="overflow-hidden">
+    <div className="relative">
       {/* <Hero /> */}
       <HeroNew />
       {/* <Services /> */}

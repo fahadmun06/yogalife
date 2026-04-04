@@ -6,30 +6,30 @@ import { CheckCircle } from "lucide-react";
 const featuresLeft = [
   {
     title: "Follow-Along Workout Videos",
-    desc: "A complete library of Pilates, Strength, Yoga, Sweat, Power, Stretch. Move anytime, anywhere,and experience the freedom of making movement a part of your daily life.",
+    desc: "A complete library of Pilates, Strength, training, yoga and stretch sessions. Move anytime, anywhere — and make movement a consistent part of your daily life.",
   },
   {
     title: "Personalized Cycle Syncing",
-    desc: "Align your workouts, nutrition, and lifestyle with your menstrual cycle for better energy, balance, and results.",
+    desc: "Align your workouts, nutrition, and lifestyle with your menstrual cycle. Support better energy, balance, and sustainable results.",
   },
   {
-    title: "6 Progressive Workout Guides",
-    desc: "Choose from beginner to advanced training plans — designed to meet you exactly where you are.",
+    title: "3 Progressive Workout Guides",
+    desc: "Strength Training • Pilates • Stretching. Choose from beginner to advanced training plans designed to meet you exactly where you are.",
   },
   {
-    title: "Custom Workout Planner",
-    desc: "Add, remove, or swap workouts to create a routine that truly fits your lifestyle.",
+    title: "Flexible Workouts & Coaching Support",
+    desc: "Choose your workouts any time of the day and receive personalized coaching. Includes one-on-one coaching and monthly check-ins for accountability and progress.",
   },
 ];
 
 const featuresRight = [
   {
     title: "100+ Dietitian-Approved Recipes",
-    desc: "Delicious vegan, pescatarian, vegetarian, and gluten-free recipes — designed to fuel your body and gut health.",
+    desc: "Delicious vegan, pescatarian, vegetarian, and gluten-free recipes — designed to fuel your body & gut health.",
   },
   {
     title: "Exclusive Ebooks & Guides",
-    desc: "Resources covering lifestyle changes, weight management, gut health, meal planning, and sustainable living.",
+    desc: "Practical resources covering lifestyle changes, weight management, gut health, meal planning, and sustainable living.",
   },
   {
     title: "Gut Healing Guidance",
@@ -37,13 +37,13 @@ const featuresRight = [
   },
   {
     title: "Supportive Community & Accountability",
-    desc: "Connect with like-minded people, join discussions, workshops and stay consistent with monthly check-ins.",
+    desc: "Connect with like-minded people, join discussions and workshops, and stay consistent with monthly check-ins.",
   },
 ];
 
 export default function WhyChooseUsNew() {
   return (
-    <section className="py-16 bg-white overflow-hidden">
+    <section className="py-16 bg-[#F4EDF5] overflow-hidden">
       <div className="container mx-auto text-center">
         {/* Heading */}
         <motion.p
@@ -64,6 +64,8 @@ export default function WhyChooseUsNew() {
           whileInView={{ opacity: 1, y: 0 }}
         >
           Why Choose Us
+          <br />
+          Get Coaching Guidance
         </motion.h2>
 
         <motion.p
@@ -73,14 +75,15 @@ export default function WhyChooseUsNew() {
           viewport={{ once: true }}
           whileInView={{ opacity: 1 }}
         >
-          Your complete wellness journey — from guided workouts and nutrition to
-          mindfulness, gut health, and a supportive community.
+          Your complete wellness journey — combining guided workouts,
+          intentional nutrition, mindfulness practices, gut health support, and
+          a powerful community. Everything you need, all in one space.
         </motion.p>
 
         {/* Main Content */}
         <div className="relative mt-12 px-2 md:px-0 flex flex-col md:flex-row items-center justify-center gap-10">
           {/* Left Features */}
-          <div className="w-full md:w-1/3 space-y-8 text-right md:pr-6 order-2 md:order-1">
+          <div className="w-full md:w-1/3 space-y-8 text-right md:pr-1 order-2 md:order-1">
             {featuresLeft.map((item, i) => (
               <motion.div
                 key={i}
@@ -133,7 +136,7 @@ export default function WhyChooseUsNew() {
           </motion.div>
 
           {/* Right Features */}
-          <div className="w-full md:w-1/3 space-y-8 md:pl-6 order-3">
+          <div className="w-full md:w-1/3 space-y-8 md:pl-10 order-3">
             {featuresRight.map((item, i) => (
               <motion.div
                 key={i}

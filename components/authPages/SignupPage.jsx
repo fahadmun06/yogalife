@@ -1,31 +1,122 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 "use client";
 
-import React from "react";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import { addToast } from "@heroui/toast";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Select, SelectItem } from "@heroui/select";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
-import { auth, db } from "@/config/firebase";
+import { axiosInstance } from "../api/axiosInstance";
+
+import { useAuth } from "@/hooks/useAuth";
+
+// Validation Schema
+const schema = yup.object().shape({
+  firstName: yup.string().required("First name is required"),
+  lastName: yup.string().required("Last name is required"),
+  email: yup
+    .string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: yup
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .required("Password is required"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "Passwords must match")
+    .required("Confirm password is required"),
+  dob: yup.string().required("Date of birth is required"),
+  age: yup
+    .number()
+    .typeError("Age must be a number")
+    .required("Age is required"),
+  gender: yup.string().required("Gender is required"),
+  weight: yup
+    .number()
+    .typeError("Weight must be a number")
+    .required("Weight is required"),
+  weightUnit: yup
+    .string()
+    .oneOf(["kg", "lbs"], "Invalid unit")
+    .required("Required"),
+  height: yup
+    .number()
+    .typeError("Height must be a number")
+    .required("Height is required"),
+  heightUnit: yup
+    .string()
+    .oneOf(["cm", "ft"], "Invalid unit")
+    .required("Required"),
+});
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
   const router = useRouter();
+  const { register } = useAuth();
+
+  const {
+    control,
+    handleSubmit,
+    trigger,
+    setValue,
+    watch,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      dob: "",
+      age: "",
+      gender: "",
+      weight: "",
+      weightUnit: "kg",
+      height: "",
+      heightUnit: "cm",
+    },
+    mode: "onChange",
+  });
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = sessionStorage.getItem("signup_form_data");
+
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+
+        Object.keys(parsed).forEach((key) => {
+          setValue(key, parsed[key]);
+        });
+      } catch (e) {
+        console.error("Error parsing saved signup data", e);
+      }
+    }
+  }, [setValue]);
+
+  // Save data on change
+  const currentValues = watch();
+
+  useEffect(() => {
+    sessionStorage.setItem("signup_form_data", JSON.stringify(currentValues));
+  }, [currentValues]);
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
@@ -35,371 +126,585 @@ export default function SignupPage() {
     setConfirmPasswordShown(!confirmPasswordShown);
   };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const calculateAge = (dobString) => {
+    if (!dobString) return "";
+    const dob = new Date(dobString);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      addToast({
-        title: "Error",
-        description: "Passwords do not match",
-        color: "danger",
-      });
-
-      return;
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
     }
 
+    return age;
+  };
+
+  // Watch DOB to auto-calculate age
+  const watchedDob = watch("dob");
+
+  useEffect(() => {
+    if (watchedDob) {
+      const age = calculateAge(watchedDob);
+
+      setValue("age", age);
+    }
+  }, [watchedDob, setValue]);
+
+  const nextStep = async () => {
+    // Validate fields for Step 1
+    const isStepValid = await trigger([
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "confirmPassword",
+    ]);
+
+    if (!isStepValid) return;
+
     try {
-      setLoading(true);
-      console.log("Creating user...");
+      setIsCheckingEmail(true);
+      const res = await axiosInstance.post("/auth/check-email", {
+        email: currentValues.email,
+      });
 
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 30000),
-      );
+      if (res.data.success) {
+        setStep(2);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Email validation failed");
+      // if email is already registered, show the error message
+      setError("email", {
+        type: "manual",
+        message: error.response?.data?.message || "Email validation failed",
+      });
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
 
-      const signupPromise = (async () => {
-        const cred = await createUserWithEmailAndPassword(
-          auth,
-          formData.email,
-          formData.password,
+  const prevStep = () => {
+    setStep(1);
+  };
+
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      const result = await register({
+        ...data,
+        type: "user",
+      });
+
+      if (result?.success) {
+        toast.success("Registration successful! Check next page for code.");
+        sessionStorage.removeItem("signup_form_data");
+        router.push(
+          `/auth/verify?email=${encodeURIComponent(data.email)}&tempCode=${result.data.code}`,
         );
+      }
+    } catch (error) {
+      const backendErrors = error.response?.data?.errors;
 
-        console.log("User created:", cred.user.uid);
-
-        await updateProfile(cred.user, { displayName: formData.name });
-        console.log("Profile updated");
-
-        const userDoc = {
-          name: formData.name,
-          email: formData.email,
-          status: "active",
-          isVerified: false,
-          packageDetails: null,
-          createdAt: new Date().toISOString(),
-        };
-
-        console.log("Creating Firestore document...");
-        let firestoreSuccess = false;
-
-        try {
-          // Check if Firestore is available (not offline)
-          if (navigator.onLine) {
-            // Add timeout for Firestore operation
-            const firestorePromise = setDoc(
-              doc(db, "users", cred.user.uid),
-              userDoc,
-            );
-            const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("Firestore timeout")), 10000),
-            );
-
-            await Promise.race([firestorePromise, timeoutPromise]);
-            console.log("Firestore document created");
-            firestoreSuccess = true;
-          } else {
-            console.log("Offline mode - skipping Firestore");
-          }
-        } catch (firestoreError) {
-          console.error("Firestore error:", firestoreError);
-          console.log("Continuing without Firestore document...");
-        }
-
-        const normalized = {
-          uid: cred.user.uid,
-          name: userDoc.name,
-          email: userDoc.email,
-          status: userDoc.status,
-          isVerified: userDoc.isVerified,
-          packageDetails: userDoc.packageDetails,
-        };
-
-        console.log("Setting cookie...");
-        Cookies.set("tinashaii_user", JSON.stringify(normalized), {
-          expires: 7,
+      if (Array.isArray(backendErrors)) {
+        backendErrors.forEach((err) => {
+          setError(err.field, {
+            type: "server",
+            message: err.message,
+          });
         });
-
-        return { normalized, firestoreSuccess };
-      })();
-
-      const { normalized, firestoreSuccess } = await Promise.race([
-        signupPromise,
-        timeoutPromise,
-      ]);
-
-      console.log("Showing success toast...");
-      addToast({
-        title: "Success",
-        description: firestoreSuccess
-          ? "Account created successfully"
-          : "Account created successfully",
-        color: "success",
-      });
-
-      console.log("Redirecting...");
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
-    } catch (err) {
-      console.error("Signup error:", err);
-      addToast({
-        title: "Error",
-        description: err?.message || "Signup failed",
-        color: "danger",
-      });
+      } else {
+        toast.error(error.message || "Registration failed");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      x: -20,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const getInputClassNames = (error) => ({
+    inputWrapper: `
+      rounded-2xl 
+      border-[1.5px] ${error ? "border-red-500" : "border-[#764979]"}
+      bg-gradient-to-br from-white to-slate-50
+      shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
+      transition-all duration-300
+      focus:outline-none ring-0 w-full
+    `,
+    input: "text-black placeholder:text-gray-400 font-sans",
+  });
+
+  const getSelectClassNames = (error) => ({
+    trigger: `
+      rounded-2xl 
+      border-[1.5px] ${error ? "border-red-500" : "border-[#764979]"}
+      bg-gradient-to-br from-white to-slate-50
+      shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
+      transition-all duration-300
+      focus:outline-none ring-0 w-full h-12 uppercase
+    `,
+    value: "text-black font-sans uppercase",
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#764979] to-[#5a3a5e] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Left Decorative Image */}
-      <motion.img
-        alt="left design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute left-0 top-10 hidden md:block"
-        height={236}
-        initial={{ opacity: 0, x: -80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-left-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={233}
-      />
-
-      {/* Right Decorative Image */}
-      <motion.img
-        alt="right design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute right-0 top-20 hidden md:block"
-        height={267}
-        initial={{ opacity: 0, x: 80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-right-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={193}
-      />
-
       <motion.div
-        animate={{ opacity: 1, scale: 1 }}
+        animate="visible"
         className="w-full max-w-xl z-10"
-        initial={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+        initial="hidden"
+        variants={{
+          hidden: { opacity: 0, y: 24 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+        }}
       >
-        <div className="auth-card bg-white/95 backdrop-blur-sm border-0 shadow-2xl p-8">
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            initial={{ opacity: 0, y: 20 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            <h1 className="text-3xl font-bold text-[#764979] mb-2 text-center">
-              Create Account
-            </h1>
-            <p className="text-gray-600 text-center mb-8">Join us today</p>
-
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <motion.div
-                animate={{ opacity: 1, x: 0 }}
-                initial={{ opacity: 0, x: -20 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
+        <div className="auth-card bg-white/95 backdrop-blur-sm border-0 shadow-2xl p-8 rounded-3xl">
+          <div className="flex justify-between items-center mb-6">
+            {step === 2 && (
+              <button
+                className="text-[#764979] hover:bg-purple-50 p-2 rounded-full transition-colors"
+                onClick={prevStep}
               >
-                <label
-                  className="block text-[#764979] font-semibold mb-2"
-                  htmlFor="name"
-                >
-                  Full Name
-                </label>
-                <Input
-                  required
-                  classNames={{
-                    inputWrapper: `
-                       rounded-2xl 
-                        border-[1.5px] border-[#764979]
-                        bg-gradient-to-br from-white to-slate-50
-                        shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
-                        transition-all duration-300
-                        focus:outline-none ring-0 w-full
-                     `,
-                    input: "text-black placeholder:text-gray-400",
-                  }}
-                  id="name"
-                  name="name"
-                  placeholder="Enter your full name"
-                  size="lg"
-                  type="text"
-                  value={formData.name}
-                  variant="bordered"
-                  onChange={handleChange}
-                />
-              </motion.div>
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <div className="flex-1 text-center">
+              <h1 className="text-3xl font-bold text-[#764979]">
+                {step === 1 ? "Create Account" : "Tell Us About Yourself"}
+              </h1>
+              <p className="text-gray-500 mt-1 uppercase font-semibold text-xs">
+                {step === 1 ? "Step 1 of 2" : "Step 2 of 2"}
+              </p>
+            </div>
+          </div>
 
-              <motion.div
-                animate={{ opacity: 1, x: 0 }}
-                initial={{ opacity: 0, x: -20 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <motion.form
+                key="step1"
+                animate="visible"
+                className="space-y-5"
+                exit="exit"
+                initial="hidden"
+                variants={containerVariants}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  nextStep();
+                }}
               >
-                <label
-                  className="block text-[#764979] font-semibold mb-2"
-                  htmlFor="email"
-                >
-                  Email Address
-                </label>
-                <Input
-                  required
-                  classNames={{
-                    inputWrapper: `
-                       rounded-2xl 
-                        border-[1.5px] border-[#764979]
-                        bg-gradient-to-br from-white to-slate-50
-                        shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
-                        transition-all duration-300
-                        focus:outline-none ring-0 w-full
-                     `,
-                    input: "text-black placeholder:text-gray-400",
-                  }}
-                  id="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  size="lg"
-                  type="email"
-                  value={formData.email}
-                  variant="bordered"
-                  onChange={handleChange}
-                />
-              </motion.div>
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      First Name
+                    </label>
+                    <Controller
+                      control={control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.firstName)}
+                          placeholder="First name"
+                          size="lg"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.firstName && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.firstName.message}
+                      </p>
+                    )}
+                  </motion.div>
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      Last Name
+                    </label>
+                    <Controller
+                      control={control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.lastName)}
+                          placeholder="Last name"
+                          size="lg"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.lastName && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.lastName.message}
+                      </p>
+                    )}
+                  </motion.div>
+                </div>
 
-              <motion.div
-                animate={{ opacity: 1, x: 0 }}
-                initial={{ opacity: 0, x: -20 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-              >
-                <label
-                  className="block text-[#764979] font-semibold mb-2"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-                <Input
-                  required
-                  classNames={{
-                    inputWrapper: `
-                       rounded-2xl 
-                        border-[1.5px] border-[#764979]
-                        bg-gradient-to-br from-white to-slate-50
-                        shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
-                        transition-all duration-300
-                        focus:outline-none ring-0 w-full
-                     `,
-                    input: "text-black placeholder:text-gray-400",
-                  }}
-                  endContent={
-                    passwordShown ? (
-                      <EyeOff
-                        className="cursor-pointer text-gray-500"
-                        onClick={togglePasswordVisibility}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                    Email Address
+                  </label>
+                  <Controller
+                    control={control}
+                    name="email"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        classNames={getInputClassNames(errors.email)}
+                        placeholder="Enter your email"
+                        size="lg"
+                        type="email"
+                        variant="bordered"
                       />
-                    ) : (
-                      <Eye
-                        className="cursor-pointer text-gray-500"
-                        onClick={togglePasswordVisibility}
-                      />
-                    )
-                  }
-                  id="password"
-                  name="password"
-                  placeholder="Create a password"
-                  size="lg"
-                  type={passwordShown ? "text" : "password"}
-                  value={formData.password}
-                  variant="bordered"
-                  onChange={handleChange}
-                />
-              </motion.div>
+                    )}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </motion.div>
 
-              <motion.div
-                animate={{ opacity: 1, x: 0 }}
-                initial={{ opacity: 0, x: -20 }}
-                transition={{ delay: 0.7, duration: 0.6 }}
-              >
-                <label
-                  className="block text-[#764979] font-semibold mb-2"
-                  htmlFor="confirmPassword"
-                >
-                  Confirm Password
-                </label>
-                <Input
-                  required
-                  classNames={{
-                    inputWrapper: `
-                       rounded-2xl 
-                        border-[1.5px] border-[#764979]
-                        bg-gradient-to-br from-white to-slate-50
-                        shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8),0_1px_3px_rgba(0,0,0,0.1)]
-                        transition-all duration-300
-                        focus:outline-none ring-0 w-full
-                     `,
-                    input: "text-black placeholder:text-gray-400",
-                  }}
-                  endContent={
-                    confirmPasswordShown ? (
-                      <EyeOff
-                        className="cursor-pointer text-gray-500"
-                        onClick={toggleConfirmPasswordVisibility}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                    Password
+                  </label>
+                  <Controller
+                    control={control}
+                    name="password"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        classNames={getInputClassNames(errors.password)}
+                        endContent={
+                          <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                          >
+                            {passwordShown ? (
+                              <EyeOff className="text-gray-500" size={20} />
+                            ) : (
+                              <Eye className="text-gray-500" size={20} />
+                            )}
+                          </button>
+                        }
+                        placeholder="Create a password"
+                        size="lg"
+                        type={passwordShown ? "text" : "password"}
+                        variant="bordered"
                       />
-                    ) : (
-                      <Eye
-                        className="cursor-pointer text-gray-500"
-                        onClick={toggleConfirmPasswordVisibility}
-                      />
-                    )
-                  }
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Confirm your password"
-                  size="lg"
-                  type={confirmPasswordShown ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  variant="bordered"
-                  onChange={handleChange}
-                />
-              </motion.div>
+                    )}
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </motion.div>
 
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                initial={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
-              >
+                <motion.div variants={itemVariants}>
+                  <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                    Confirm Password
+                  </label>
+                  <Controller
+                    control={control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        classNames={getInputClassNames(errors.confirmPassword)}
+                        endContent={
+                          <button
+                            type="button"
+                            onClick={toggleConfirmPasswordVisibility}
+                          >
+                            {confirmPasswordShown ? (
+                              <EyeOff className="text-gray-500" size={20} />
+                            ) : (
+                              <Eye className="text-gray-500" size={20} />
+                            )}
+                          </button>
+                        }
+                        placeholder="Confirm your password"
+                        size="lg"
+                        type={confirmPasswordShown ? "text" : "password"}
+                        variant="bordered"
+                      />
+                    )}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </motion.div>
+
                 <Button
-                  className="button-3d w-full bg-[#764979] hover:bg-[#5a3a5e] text-white font-semibold py-5 h-12 text-lg"
-                  disabled={loading}
-                  isDisabled={loading}
+                  className="w-full bg-[#764979] text-white font-bold h-12 rounded-2xl mt-4 shadow-lg active:scale-[0.98] transition-transform"
+                  isLoading={isCheckingEmail}
+                  type="submit"
+                >
+                  Continue
+                </Button>
+              </motion.form>
+            ) : (
+              <motion.form
+                key="step2"
+                animate="visible"
+                className="space-y-5"
+                exit="exit"
+                initial="hidden"
+                variants={containerVariants}
+                onSubmit={handleSubmit(onSubmit)}
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      Date of Birth
+                    </label>
+                    <Controller
+                      control={control}
+                      name="dob"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.dob)}
+                          size="lg"
+                          type="date"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.dob && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.dob.message}
+                      </p>
+                    )}
+                  </motion.div>
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      Age
+                    </label>
+                    <Controller
+                      control={control}
+                      name="age"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.age)}
+                          placeholder="e.g. 25"
+                          size="lg"
+                          type="number"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.age && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.age.message}
+                      </p>
+                    )}
+                  </motion.div>
+                </div>
+
+                <motion.div variants={itemVariants}>
+                  <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                    Gender
+                  </label>
+                  <Controller
+                    control={control}
+                    name="gender"
+                    render={({ field }) => (
+                      <Select
+                        classNames={getSelectClassNames(errors.gender)}
+                        placeholder="Select gender"
+                        selectedKeys={field.value ? [field.value] : []}
+                        variant="bordered"
+                        onSelectionChange={(keys) =>
+                          field.onChange(Array.from(keys)[0])
+                        }
+                      >
+                        <SelectItem key="male" value="male">
+                          Male
+                        </SelectItem>
+                        <SelectItem key="female" value="female">
+                          Female
+                        </SelectItem>
+                        <SelectItem key="other" value="other">
+                          Other
+                        </SelectItem>
+                      </Select>
+                    )}
+                  />
+                  {errors.gender && (
+                    <p className="text-red-500 text-xs mt-1 ml-1">
+                      {errors.gender.message}
+                    </p>
+                  )}
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      Weight
+                    </label>
+                    <Controller
+                      control={control}
+                      name="weight"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.weight)}
+                          endContent={
+                            <Controller
+                              control={control}
+                              name="weightUnit"
+                              render={({ field: unitField }) => (
+                                <Select
+                                  aria-label="Weight Unit"
+                                  className="min-w-18 max-w-18"
+                                  classNames={{
+                                    trigger:
+                                      "border-0 bg-transparent shadow-none h-8 px-0",
+                                    value: "text-xs font-bold text-[#764979]",
+                                  }}
+                                  selectedKeys={[unitField.value]}
+                                  onSelectionChange={(keys) =>
+                                    unitField.onChange(Array.from(keys)[0])
+                                  }
+                                >
+                                  <SelectItem key="kg" value="kg">
+                                    kg
+                                  </SelectItem>
+                                  <SelectItem key="lbs" value="lbs">
+                                    lbs
+                                  </SelectItem>
+                                </Select>
+                              )}
+                            />
+                          }
+                          placeholder="0.0"
+                          size="lg"
+                          type="number"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.weight && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.weight.message}
+                      </p>
+                    )}
+                    {errors.weightUnit && (
+                      <p className="text-red-500 text-[10px] mt-0.5 ml-1">
+                        Unit: {errors.weightUnit.message}
+                      </p>
+                    )}
+                  </motion.div>
+
+                  <motion.div variants={itemVariants}>
+                    <label className="block text-[#764979] font-bold mb-1.5 ml-1 text-sm uppercase">
+                      Height
+                    </label>
+                    <Controller
+                      control={control}
+                      name="height"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          classNames={getInputClassNames(errors.height)}
+                          endContent={
+                            <Controller
+                              control={control}
+                              name="heightUnit"
+                              render={({ field: unitField }) => (
+                                <Select
+                                  aria-label="Height Unit"
+                                  className="min-w-18 max-w-18"
+                                  classNames={{
+                                    trigger:
+                                      "border-0 bg-transparent shadow-none h-8 px-0",
+                                    value: "text-xs font-bold text-[#764979]",
+                                  }}
+                                  selectedKeys={[unitField.value]}
+                                  onSelectionChange={(keys) =>
+                                    unitField.onChange(Array.from(keys)[0])
+                                  }
+                                >
+                                  <SelectItem key="cm" value="cm">
+                                    cm
+                                  </SelectItem>
+                                  <SelectItem key="ft" value="ft">
+                                    ft
+                                  </SelectItem>
+                                </Select>
+                              )}
+                            />
+                          }
+                          placeholder="0.0"
+                          size="lg"
+                          type="number"
+                          variant="bordered"
+                        />
+                      )}
+                    />
+                    {errors.height && (
+                      <p className="text-red-500 text-xs mt-1 ml-1">
+                        {errors.height.message}
+                      </p>
+                    )}
+                    {errors.heightUnit && (
+                      <p className="text-red-500 text-[10px] mt-0.5 ml-1">
+                        Unit: {errors.heightUnit.message}
+                      </p>
+                    )}
+                  </motion.div>
+                </div>
+
+                <Button
+                  className="w-full bg-[#764979] text-white font-bold h-12 rounded-2xl mt-4 shadow-lg active:scale-[0.98] transition-transform"
                   isLoading={loading}
                   type="submit"
                 >
                   Create Account
                 </Button>
-              </motion.div>
-            </form>
+              </motion.form>
+            )}
+          </AnimatePresence>
 
-            <motion.div
-              animate={{ opacity: 1 }}
-              className="mt-6 text-center"
-              initial={{ opacity: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-            >
-              <p className="text-gray-600">
-                Already have an account?{" "}
-                <Link
-                  className="text-[#764979] font-semibold hover:underline"
-                  href="/auth/login"
-                >
-                  Sign in here
-                </Link>
-              </p>
-            </motion.div>
+          <motion.div className="mt-6 text-center" variants={itemVariants}>
+            <p className="text-gray-600">
+              Already have an account?{" "}
+              <Link
+                className="text-[#764979] font-semibold hover:underline"
+                href="/auth/login"
+              >
+                Sign in here
+              </Link>
+            </p>
           </motion.div>
         </div>
       </motion.div>

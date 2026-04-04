@@ -11,44 +11,39 @@ const ServicePage = () => {
   return (
     <div>
       <section
-        className="relative bg-cover no-repeat bg-center py-32"
+        className="relative bg-no-repeat bg-right md:bg-center bg-cover min-h-[80vh] h-[70vh] flex items-center justify-center py-32"
         style={{
-          backgroundImage: "url(/img1.jpg)",
+          backgroundImage: "url(/unnamed.jpg)",
         }}
       >
-        <div className="absolute inset-0 bg-primary/70" />
-
-        {/* Decorative flower top-left */}
-        <motion.img
-          alt="Design Element"
-          className="absolute top-10 left-0 w-[200px] hidden md:block z-20"
-          initial={{ opacity: 0, x: -50, y: -50, scale: 0.8 }}
-          src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-left-design-1.png"
-          transition={{ duration: 1, ease: "easeOut" }}
-          viewport={{ once: true }}
-          whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-        />
+        {/* Soft overlay to ensure readability while keeping the image visible */}
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm md:backdrop-blur-none" />
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
-            className="text-center text-white"
+            className="text-center md:-mt-10"
             initial={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
             whileInView={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Services</h1>
-            <p className="text-lg mb-6 max-w-2xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-playfair font-bold text-[#4A3B4C] mb-4 tracking-wide">
+              Services
+            </h1>
+            <p className="text-lg md:text-2xl font-playfair mb-8 max-w-2xl mx-auto text-[#6A5A6D]">
               Practice Whereever You Want Whenever You Need
             </p>
             <div className="flex justify-center items-center">
-              <nav className="breadcrumb bg-black/20 p-2 px-4 rounded-lg ">
-                <Link className="text-white hover:text-yellow-300" href="/">
+              <nav className="breadcrumb bg-[#A38B9B]/90 backdrop-blur-sm px-6 py-2 rounded-lg shadow-sm text-white font-medium tracking-wide">
+                <Link
+                  className="hover:text-gray-200 transition-colors"
+                  href="/"
+                >
                   Home
                 </Link>
-                <span className="mx-2">/</span>
+                <span className="mx-3 font-light">/</span>
                 <Link
-                  className="text-white hover:text-yellow-300"
+                  className="hover:text-gray-200 transition-colors"
                   href="/services"
                 >
                   Services

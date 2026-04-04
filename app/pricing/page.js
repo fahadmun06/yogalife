@@ -5,7 +5,7 @@ import PricingPage from "../../components/pages/Pricing";
 export const metadata = {
   title: "Pricing | Tinashaii",
   description:
-    "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
+    "Choose the perfect plan for your wellness journey. Explore Tinashaii's subscription options and premium wellness pricing.",
 };
 
 export default function page() {

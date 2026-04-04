@@ -1,34 +1,62 @@
 "use client";
-import React from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import YogasticFooter from "@/components/NewSimpleUI/YogasticFooter";
 import Navbar from "@/components/Navbar";
 import AppLoader from "@/components/AppLoader";
-import { useLoading } from "@/context/LoadingContext";
-import { useUser } from "@/context/UserContext";
+import FloatingWaitlistButton from "@/components/FloatingWaitlistButton";
+import { useAuth } from "@/hooks/useAuth";
+import { useGeneral } from "@/hooks/useGeneral";
 
 export default function MainLayout({ children }) {
-  const restrictRoute = ["/auth/login", "/auth/signup", "/cancel", "/success"];
+  const restrictRoute = [
+    "/auth/change-password",
+    "/auth/forgot-password",
+    "/auth/login",
+    "/auth/reset-password",
+    "/auth/signup",
+    "/auth/verify",
+    "/cancel",
+    "/success",
+  ];
   const pathname = usePathname();
-  const { isLoading, loadingMessage } = useLoading();
-  const { user } = useUser();
+  const { user, refreshSession } = useAuth();
+  const { isLoading, loadingMessage, setAppLoading } = useGeneral();
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  useEffect(() => {
+    refreshSession();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
-      {/* Loading Screen */}
-      <AppLoader 
-        isVisible={isLoading} 
+      <AppLoader
+        isVisible={isLoading}
         message={loadingMessage}
         showUserStatus={true}
         user={user}
       />
-      
-      {/* Main App */}
-      <div className="relative flex flex-col h-screen">
-        {restrictRoute.includes(pathname) ? null : <Navbar />}
-        <main className="mx-auto w-full text-black flex-grow">{children}</main>
-        {restrictRoute.includes(pathname) ? null : <YogasticFooter />}
+      <div className="relative text-black">
+        {isDashboard || restrictRoute.includes(pathname) ? null : <Navbar />}
+        <main>{children}</main>
+        {isDashboard ||
+        pathname.startsWith("/premium") ||
+        restrictRoute.includes(pathname) ||
+        !!user ? null : (
+          <YogasticFooter />
+        )}
+        {!isDashboard && !pathname.startsWith("/premium") && !user && (
+          <FloatingWaitlistButton />
+        )}
       </div>
     </>
   );

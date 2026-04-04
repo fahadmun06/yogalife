@@ -48,16 +48,15 @@ export default function Pricing() {
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative rounded-3xl p-[2px] transition-all duration-500 transform hover:scale-105 hover:-rotate-1 ${
-                plan.popular
+              className={`relative rounded-3xl p-[2px] transition-all duration-500 transform hover:scale-105 hover:-rotate-1 ${plan.popular
                   ? "bg-gradient-to-r from-purple-500 to-pink-400 dark:from-purple-700 dark:to-pink-700 shadow-2xl"
                   : "bg-gradient-to-r from-purple-200/60 to-pink-100/60 dark:from-white/5 dark:to-white/5 shadow-lg"
-              }`}
+                }`}
             >
               <div className="rounded-3xl p-8 h-full flex flex-col items-center justify-between bg-white/80 dark:bg-white/5 backdrop-blur-md shadow-inner">
                 {plan.popular && (
                   <span className="absolute -top-4 bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-700 dark:to-pink-600 text-white text-xs font-semibold px-5 py-1 rounded-full shadow-md">
-                    ⭐ Most Popular
+                    Most Popular
                   </span>
                 )}
                 <div className="mb-6">{plan.icon}</div>
@@ -83,11 +82,10 @@ export default function Pricing() {
 
                 {/* Button */}
                 <button
-                  className={`px-8 py-3 text-lg rounded-xl shadow-xl transition-all ${
-                    plan.popular
+                  className={`px-8 py-3 text-lg rounded-xl shadow-xl transition-all ${plan.popular
                       ? "bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-700 dark:to-pink-600 hover:from-purple-800 hover:to-pink-700 text-white"
                       : "bg-gradient-to-r from-purple-400 to-purple-600 dark:from-purple-600 dark:to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white"
-                  }`}
+                    }`}
                   onClick={() => roter.push("/auth/login")}
                 >
                   Enroll Now

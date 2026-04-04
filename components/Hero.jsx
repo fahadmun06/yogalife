@@ -37,6 +37,7 @@ export default function Hero() {
         {/* Right Image */}
         <div className="relative mt-10 md:mt-0">
           <div className="rounded-3xl overflow-hidden shadow-2xl transform hover:rotate-1 hover:scale-105 transition duration-500">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               alt="Yoga Pose"
               className="w-[700px] h-[500px] object-cover"

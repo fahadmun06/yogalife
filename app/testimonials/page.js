@@ -5,7 +5,7 @@ import TestimonialsPage from "../../components/pages/TestimonialsPage";
 export const metadata = {
   title: "Testimonials | Tinashaii",
   description:
-    "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
+    "Discover how Tinashaii has transformed lives through yoga and mindfulness. Read inspiring stories and reviews from our community.",
 };
 
 export default function page() {

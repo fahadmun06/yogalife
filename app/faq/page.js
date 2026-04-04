@@ -5,7 +5,7 @@ import FAQSection from "../../components/FAQSection";
 export const metadata = {
   title: "FAQ | Tinashaii",
   description:
-    "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
+    "Find answers to frequently asked questions about Tinashaii's yoga workouts, nutrition plans, and holistic coaching.",
 };
 
 export default function page() {

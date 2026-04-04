@@ -5,25 +5,24 @@ import { useRouter } from "next/navigation";
 import { doc, updateDoc } from "firebase/firestore";
 import Cookies from "js-cookie";
 
-import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/config/firebase";
 import PageLoader from "@/components/PageLoader";
+import { encryptData } from "@/components/api/encrypted";
 
 export default function SuccessPage() {
   const router = useRouter();
-  const { user, refreshUser } = useUser();
+  const { user, refreshSession } = useAuth();
   const [updating, setUpdating] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform";
-  // const FORM_URL =
-  //   "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform?usp=sf_link";
 
   useEffect(() => {
     const updateUserPackage = async () => {
       try {
         const sessionId = new URLSearchParams(window.location.search).get(
-          "session_id"
+          "session_id",
         );
 
         if (sessionId) {
@@ -41,10 +40,12 @@ export default function SuccessPage() {
                   packageDetails: data.packageDetails,
                   isPremium: true,
                 };
-                Cookies.set("tinashaii_user", JSON.stringify(updatedUser), {
+
+                // Use standardized cookie with encryption
+                Cookies.set("userdata-tina-user", encryptData(updatedUser), {
                   expires: 7,
                 });
-                await refreshUser?.();
+                refreshSession();
               }
               localStorage.removeItem("selectedPlan");
               setUpdating(false);
@@ -69,10 +70,10 @@ export default function SuccessPage() {
         trialEndDate.setDate(startDate.getDate() + 7);
         finalEndDate.setDate(startDate.getDate() + 7 + planDetails.duration);
         const trialDaysLeft = Math.ceil(
-          (trialEndDate - startDate) / (1000 * 60 * 60 * 24)
+          (trialEndDate - startDate) / (1000 * 60 * 60 * 24),
         );
         const totalDaysLeft = Math.ceil(
-          (finalEndDate - startDate) / (1000 * 60 * 60 * 24)
+          (finalEndDate - startDate) / (1000 * 60 * 60 * 24),
         );
         const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -117,17 +118,19 @@ export default function SuccessPage() {
               },
             });
             const updatedUser = { ...user, packageDetails, isPremium: true };
-            Cookies.set("tinashaii_user", JSON.stringify(updatedUser), {
+
+            // Use standardized cookie with encryption
+            Cookies.set("userdata-tina-user", encryptData(updatedUser), {
               expires: 7,
             });
-            await refreshUser?.();
+            refreshSession();
           } catch (e) {
             console.error("success: Firestore update failed (fallback)", e);
           }
         } else {
           localStorage.setItem(
             "pendingPackageDetails",
-            JSON.stringify(packageDetails)
+            JSON.stringify(packageDetails),
           );
         }
 
@@ -152,7 +155,6 @@ export default function SuccessPage() {
       }, 3000);
 
       return () => clearTimeout(timer);
-      setRedirecting(false);
     }
   }, [updating, router]);
 
@@ -162,7 +164,6 @@ export default function SuccessPage() {
     setTimeout(() => {
       router.push("/pricing");
     }, 3000);
-    setRedirecting(false);
   };
 
   if (updating) {
@@ -220,13 +221,11 @@ export default function SuccessPage() {
           Click to open the health assessment form. You&apos;ll be redirected
           back to pricing shortly.
         </p>
-
         <p className="text-xs text-primary mt-2">
           <a
             href={FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            disabled={redirecting}
             className="underline hover:no-underline text-primary cursor-pointer"
           >
             Or click here to open form manually

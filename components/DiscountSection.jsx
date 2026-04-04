@@ -1,31 +1,29 @@
 "use client";
 
-import { useUser } from "@/context/UserContext";
+import { useAuth } from "@/hooks/useAuth";
 import { loadStripe } from "@stripe/stripe-js";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
 );
 
-
 export default function DiscountSection() {
-  const { user } = useUser();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
-  
+
   async function handleCheckout(plan) {
-    if (!user) {
+    if (!isAuthenticated) {
       router.push("/auth/login");
       return;
     }
-    // console.log("user", user);
+
     try {
       // Check if user already has an active subscription
       if (user?.packageDetails && user.packageDetails.subStatus === "active") {
-        setSelectedPlan(plan);
-        setIsModalOpen(true);
-
+        toast.info("You already have an active subscription.");
         return;
       }
 
@@ -40,7 +38,6 @@ export default function DiscountSection() {
         duration: plan === "monthly" ? 30 : plan === "quarterly" ? 90 : 455,
         price: plan === "monthly" ? 7500 : plan === "quarterly" ? 22500 : 75500,
         planType: plan,
-
         currency: "JMD",
         trialDaysLeft: 7,
         trialStatus: "active",
@@ -64,7 +61,6 @@ export default function DiscountSection() {
 
       if (!contentType.includes("application/json")) {
         const text = await res.text();
-
         throw new Error(text?.slice(0, 300) || "Unexpected non-JSON response");
       }
 
@@ -88,11 +84,10 @@ export default function DiscountSection() {
       <section
         className="relative py-20 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/discount-bg.png')", // 🔥 replace with your background image
+          backgroundImage: "url('/discount-bg.png')",
         }}
       >
         <div className="container mx-auto text-center px-4">
-          {/* Main Heading */}
           <motion.h2 className="text-4xl md:text-5xl font-bold leading-snug text-gray-900">
             Lock in a full year of coaching for just{" "}
             <span className="text-primary">$75,000</span> and get{" "}
@@ -123,15 +118,10 @@ export default function DiscountSection() {
             </li>
           </motion.ul>
 
-          {/* CTA Button */}
           <motion.button
-            className="mt-10 cursor-pointer inline-block bg-primary hover:bg-[#E1CCAD] hover:text-black text-white font-semibold py-3 px-8 rounded-tl-3xl rounded-br-3xl shadow-lg transition"
-            initial={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            whileHover={{ scale: 1.05 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            className="mt-10 cursor-pointer inline-block bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-8 rounded-tl-3xl rounded-br-3xl shadow-lg transition"
             onClick={() => handleCheckout("yearly")}
-            onKeyDown={() => handleCheckout("yearly")}
+            onKeyDown={(e) => e.key === "Enter" && handleCheckout("yearly")}
           >
             Get Started
           </motion.button>

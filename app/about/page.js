@@ -5,7 +5,7 @@ import AboutUsPage from "../../components/pages/AboutUsPage";
 export const metadata = {
   title: "About Us | Tinashaii",
   description:
-    "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
+    "Learn about Tinashaii's mission to take your yoga to the next level through holistic coaching, wellness, and dedicated support.",
 };
 
 export default function page() {

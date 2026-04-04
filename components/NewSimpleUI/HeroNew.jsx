@@ -70,46 +70,11 @@ export default function HeroNew() {
   }, []);
 
   return (
-    <section
-      className="relative pt-32 w-full min-h-[90vh] flex items-center justify-center overflow-hidden"
-      style={{
-        backgroundImage: `url("img10.jpg")`,
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Overlay Color */}
-      <div className="absolute inset-0 bg-[#764979]/90" />
-
-      {/* Left Decorative Image */}
-      <motion.img
-        alt="left design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute left-0 top-10 hidden md:block"
-        height={236}
-        initial={{ opacity: 0, x: -80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-left-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={233}
-      />
-
-      {/* Right Decorative Image */}
-      <motion.img
-        alt="right design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute right-0 top-20 hidden md:block"
-        height={267}
-        initial={{ opacity: 0, x: 80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-right-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={193}
-      />
-
+    <section className="relative pt-32 w-full min-h-[90vh] flex items-center justify-center overflow-hidden bg-[url('/heromd.png')] lg:bg-[url('/herolg.png')] bg-cover bg-no-repeat bg-center">
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-6 text-center md:text-left flex flex-col md:flex-row items-center">
-        {/* Left Side: Text Carousel */}
-        <div className="w-full md:w-1/2 relative">
+      <div className="container relative z-10 mx-auto px-6 text-center md:text-left flex flex-col md:flex-row items-center justify-start">
+        {/* Text Carousel (Left Aligned) */}
+        <div className="w-full md:w-1/2 relative ">
           <motion.div
             key={active}
             animate={{ opacity: 1, y: 0 }}
@@ -119,7 +84,7 @@ export default function HeroNew() {
           >
             <motion.h5
               animate={{ opacity: 1, y: 0 }}
-              className="text-lg text-yellow-300 mb-2 tracking-wide"
+              className="text-lg text-black mb-2 tracking-wide font-semibold"
               initial={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
@@ -148,7 +113,7 @@ export default function HeroNew() {
               )}
             </motion.p>
             <motion.a
-              className="bg-[#E1CCAD] hover:bg-primary hover:text-white cursor-pointer text-[#413625] px-8 py-3 rounded-tl-3xl rounded-br-3xl font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
+              className="bg-white hover:bg-primary hover:text-white inline-block cursor-pointer text-[#413625] px-8 py-3 rounded-tl-3xl rounded-br-3xl font-semibold shadow-md transition-all duration-300 hover:shadow-lg"
               href={slides[active].link}
             >
               Get Started
@@ -156,7 +121,7 @@ export default function HeroNew() {
           </motion.div>
 
           {/* Indicators */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 mt-6 justify-center md:justify-start">
             {slides.map((_, i) => (
               <motion.button
                 key={i}
@@ -172,25 +137,6 @@ export default function HeroNew() {
               />
             ))}
           </div>
-        </div>
-
-        {/* Right Side: Hero Image */}
-        <div className="w-full md:w-1/2 mt-10 md:mt-0">
-          <motion.img
-            alt="hero"
-            animate={{
-              y: [0, -20, 0],
-            }}
-            className="mx-auto rounded-tl-[50px] rounded-br-[50px]"
-            height={732}
-            src="img11.jpg"
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            width={683}
-          />
         </div>
       </div>
     </section>

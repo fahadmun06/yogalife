@@ -14,97 +14,118 @@ import { FlatCompat } from "@eslint/eslintrc";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-	baseDirectory: __dirname,
-	recommendedConfig: js.configs.recommended,
-	allConfig: js.configs.all,
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all,
 });
 
 export default defineConfig([
-	globalIgnores([
-		".now/*",
-		"**/*.css",
-		"**/.changeset",
-		"**/dist",
-		"esm/*",
-		"public/*",
-		"tests/*",
-		"scripts/*",
-		"**/*.config.js",
-		"**/.DS_Store",
-		"**/node_modules",
-		"**/coverage",
-		"**/.next",
-		"**/build",
-		"!**/.commitlintrc.cjs",
-		"!**/.lintstagedrc.cjs",
-		"!**/jest.config.js",
-		"!**/plopfile.js",
-		"!**/react-shim.js",
-	]),
-	{
-		extends: fixupConfigRules(
-			compat.extends(
-				"plugin:react/recommended",
-				"plugin:prettier/recommended",
-				"plugin:react-hooks/recommended",
-				"plugin:jsx-a11y/recommended",
-				"plugin:@next/next/recommended",
-			),
-		),
+  globalIgnores([
+    ".now/*",
+    "**/*.css",
+    "**/.changeset",
+    "**/dist",
+    "esm/*",
+    "public/*",
+    "tests/*",
+    "scripts/*",
+    "**/*.config.js",
+    "**/.DS_Store",
+    "**/node_modules",
+    "**/coverage",
+    "**/.next",
+    "**/build",
+    "!**/.commitlintrc.cjs",
+    "!**/.lintstagedrc.cjs",
+    "!**/jest.config.js",
+    "!**/plopfile.js",
+    "!**/react-shim.js",
+  ]),
+  {
+    extends: fixupConfigRules(
+      compat.extends(
+        "plugin:react/recommended",
+        "plugin:prettier/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:jsx-a11y/recommended",
+        "plugin:@next/next/recommended",
+      ),
+    ),
 
-		plugins: {
-			react: fixupPluginRules(react),
-			"unused-imports": unusedImports,
-			import: fixupPluginRules(_import),
-			"jsx-a11y": fixupPluginRules(jsxA11Y),
-			prettier: fixupPluginRules(prettier),
-		},
+    plugins: {
+      react: fixupPluginRules(react),
+      "unused-imports": unusedImports,
+      import: fixupPluginRules(_import),
+      "jsx-a11y": fixupPluginRules(jsxA11Y),
+      prettier: fixupPluginRules(prettier),
+    },
 
-		languageOptions: {
-			globals: {
-				...Object.fromEntries(Object.entries(globals.browser).map(([key]) => [key, "off"])),
-				...globals.node,
-			},
-			ecmaVersion: 2022,
-			sourceType: "module",
-			parserOptions: { ecmaFeatures: { jsx: true } },
-		},
+    languageOptions: {
+      globals: {
+        ...Object.fromEntries(
+          Object.entries(globals.browser).map(([key]) => [key, "off"]),
+        ),
+        ...globals.node,
+      },
+      ecmaVersion: 2022,
+      sourceType: "module",
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
 
-		settings: { react: { version: "detect" } },
+    settings: { react: { version: "detect" } },
 
-		files: ["**/*.{js,jsx}", "!**/*.ts", "!**/*.tsx"],
+    files: ["**/*.{js,jsx}", "!**/*.ts", "!**/*.tsx"],
 
-		rules: {
-			"no-console": "warn",
-			"react/prop-types": "off",
-			"react/jsx-uses-react": "off",
-			"react/react-in-jsx-scope": "off",
-			"react-hooks/exhaustive-deps": "off",
-			"jsx-a11y/click-events-have-key-events": "warn",
-			"jsx-a11y/interactive-supports-focus": "warn",
-			"prettier/prettier": "warn",
-			"no-unused-vars": "warn",
-			"unused-imports/no-unused-vars": "off",
-			"unused-imports/no-unused-imports": "warn",
-			"import/order": [
-				"warn",
-				{
-					groups: ["builtin", "object", "external", "internal", "parent", "sibling", "index"],
-					pathGroups: [{ pattern: "~/**", group: "external", position: "after" }],
-					"newlines-between": "always",
-				},
-			],
-			"react/self-closing-comp": "warn",
-			"react/jsx-sort-props": [
-				"warn",
-				{ callbacksLast: true, shorthandFirst: true, noSortAlphabetically: false, reservedFirst: true },
-			],
-			"padding-line-between-statements": [
-				"warn",
-				{ blankLine: "always", prev: "*", next: "return" },
-				{ blankLine: "always", prev: ["const", "let", "var"], next: "*" },
-				{ blankLine: "any", prev: ["const", "let", "var"], next: ["const", "let", "var"] },
-			],
-		},
-	},
+    rules: {
+      "no-console": "warn",
+      "react/prop-types": "off",
+      "react/jsx-uses-react": "off",
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "jsx-a11y/click-events-have-key-events": "warn",
+      "jsx-a11y/interactive-supports-focus": "warn",
+      "prettier/prettier": "off",
+      "no-unused-vars": "warn",
+      "unused-imports/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "warn",
+      "import/order": [
+        "warn",
+        {
+          groups: [
+            "builtin",
+            "object",
+            "external",
+            "internal",
+            "parent",
+            "sibling",
+            "index",
+          ],
+          pathGroups: [
+            { pattern: "~/**", group: "external", position: "after" },
+          ],
+          "newlines-between": "always",
+        },
+      ],
+      "react/self-closing-comp": "warn",
+      "react/jsx-sort-props": [
+        "warn",
+        {
+          callbacksLast: true,
+          shorthandFirst: true,
+          noSortAlphabetically: false,
+          reservedFirst: true,
+        },
+      ],
+      "padding-line-between-statements": [
+        "warn",
+        { blankLine: "always", prev: "*", next: "return" },
+        { blankLine: "always", prev: ["const", "let", "var"], next: "*" },
+        {
+          blankLine: "any",
+          prev: ["const", "let", "var"],
+          next: ["const", "let", "var"],
+        },
+      ],
+    },
+  },
 ]);
