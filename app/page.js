@@ -2,6 +2,7 @@ import HeroNew from "@/components/NewSimpleUI/HeroNew";
 import ServicesSectionNew from "@/components/NewSimpleUI/ServicesSectionNew";
 import AboutNew from "@/components/NewSimpleUI/AboutNew";
 import WhyChooseUsNew from "@/components/NewSimpleUI/WhyChooseUsNew";
+import ButterflySection from "@/components/NewSimpleUI/ButterflySection";
 import ContactSectionNew from "@/components/NewSimpleUI/ContactSectionNew";
 import Testimonials from "@/components/Testimonials";
 import Blog from "@/components/Blog";
@@ -24,6 +25,7 @@ export default function Home() {
       <ServicesSectionNew />
       <AboutNew />
       <WhyChooseUsNew />
+      <ButterflySection />
       {/* <PricingSectionNew /> */}
       <SubscriptionPage />
       <ContactSectionNew />

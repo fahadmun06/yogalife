@@ -12,13 +12,15 @@ const services = [
     title: "1:1 Health Coaching",
     desc: "Get personalized support designed around your goals and lifestyle.<br/><br/>Together, we build sustainable habits that support gut health, balanced hormones, and long-term transformation from the inside out.",
     img: "img2.jpg",
+    pos: "object-center",
     isHtml: true,
     link: "#",
   },
   {
     title: "Daily Workout Videos",
     desc: "Access a full library of Pilates, Strength, Sculpt, and Stretch workouts with new classes added weekly.<br/><br/>Move anytime, anywhere. Build strength, improve alignment, and stay consistent with guided sessions designed for real results.",
-    img: "Picture2.jpg",
+    img: "yogaNew.png",
+    pos: "object-center",
     isHtml: true,
     link: "#",
   },
@@ -26,6 +28,7 @@ const services = [
     title: "100+ Nourishing, Dietitian-Approved Recipes",
     desc: "Choose from over 100 whole-food recipes inspired by Jamaican flavors and global wellness.<br/><br/>Designed to fuel your body, balance blood sugar, and support gut health - without restriction.",
     img: "/healthy_food_bowl.webp", // Updated from generation
+    pos: "object-center",
     isHtml: true,
     link: "#",
   },
@@ -33,6 +36,7 @@ const services = [
     title: "Destination Wellness Retreats",
     desc: "Escape to curated wellness experiences in stunning locations.<br/><br/>Move, nourish, and restore through Pilates, strength training, and holistic living practices designed to transform you from the inside out.<br/><br/>🌿 Limited spaces available.<br/>✨ Join the retreat waitlist.",
     img: "img8.jpg",
+    pos: "object-center",
     isHtml: true,
     link: "#",
   },
@@ -55,9 +59,9 @@ export default function ServicesSectionNew() {
           </h2>
           <p className="mt-4 text-gray-600 ">
             Your wellness journey should flow with your life - not compete with
-            it. Our programs are accessible anywhere, anytime. Whether you&apos;re at
-            home, traveling, or on the go, you&apos;ll stay consistent without feeling
-            restricted.
+            it. Our programs are accessible anywhere, anytime. Whether
+            you&apos;re at home, traveling, or on the go, you&apos;ll stay
+            consistent without feeling restricted.
           </p>
         </motion.div>
 
@@ -95,7 +99,7 @@ export default function ServicesSectionNew() {
                   <div className="overflow-hidden relative">
                     <img
                       alt={s.title}
-                      className={`w-full h-52 ${s.img !== "Picture2.jpg " ? "object-cover" : "object-contain"}  group-hover:scale-105 transition-transform duration-500`}
+                      className={`w-full h-52 ${s.pos || "object-center"} ${s.img !== "Picture2.jpg " ? "object-cover" : "object-contain"}  group-hover:scale-105 transition-transform duration-500`}
                       src={s.img}
                     />
                     {/* {s.img === "Picture2.jpg" && (

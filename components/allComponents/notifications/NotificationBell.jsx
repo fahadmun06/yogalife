@@ -28,19 +28,39 @@ import {
   setFilter,
   setSearch,
   setPage,
+  addNotification,
+  incrementUnreadCount,
 } from "../../../store/slices/notificationSlice";
+import { useSocket } from "../../../context/SocketProvider";
 
 const NotificationBell = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const socket = useSocket();
 
   const { notifications, unreadCount, filter, pagination, loading } =
     useSelector((state) => state.notification);
 
   const { fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead } =
     useNotificationApi();
+
+  // Socket listener for new notifications
+  useEffect(() => {
+    if (socket) {
+      const handleNewNotification = (notification) => {
+        dispatch(addNotification(notification));
+        dispatch(incrementUnreadCount());
+      };
+
+      socket.on("new_notification", handleNewNotification);
+
+      return () => {
+        socket.off("new_notification", handleNewNotification);
+      };
+    }
+  }, [socket, dispatch]);
 
   // Fetch initial unread count
   useEffect(() => {

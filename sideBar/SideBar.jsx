@@ -85,25 +85,39 @@ export function Sidebar() {
           width: isCollapse ? (isMobile ? 0 : 80) : 256,
           x: isMobile && isCollapse ? -256 : 0,
         }}
-        className="fixed left-0 top-0 h-screen bg-[#EBE0EF] dark:bg-dark border-r border-[#E2D4E8] dark:border-darkBorder z-50 overflow-hidden"
+        className="fixed left-0 top-0 h-screen bg-[#EBE0EF] dark:bg-dark border-r border-[#E2D4E8] dark:border-darkBorder z-50"
         initial={false}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="flex flex-col h-full">
+        {/* Toggle Button - Border Floating Version */}
+        {!isMobile && (
+          <button
+            className="absolute -right-3 top-12 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg border-2 border-white dark:border-darkBorder z-[60] transition-transform hover:scale-110 active:scale-95"
+            onClick={() => dispatch(setIsCollapse(!isCollapse))}
+          >
+            {isCollapse ? (
+              <ChevronRight size={14} strokeWidth={3} />
+            ) : (
+              <ChevronLeft size={14} strokeWidth={3} />
+            )}
+          </button>
+        )}
+
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
           <div className="p-6 flex items-center justify-between">
             <AnimatePresence mode="wait">
               {!isCollapse && (
                 <motion.div
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-2"
+                  className="flex items-center w-full gap-2"
                   exit={{ opacity: 0 }}
                   initial={{ opacity: 0 }}
                 >
-                  <div className="">
+                  <div className="w-full flex justify-center">
                     <Image
                       alt="Tina Logo"
-                      className="w-16 h-16 rounded-full object-cover"
+                      className="w-16 h-16 rounded-xl mx-auto  object-cover"
                       src={"/logo.jpg"}
                       width={32}
                       height={32}
@@ -112,18 +126,6 @@ export function Sidebar() {
                 </motion.div>
               )}
             </AnimatePresence>
-            {!isMobile && (
-              <button
-                className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors text-gray-500"
-                onClick={() => dispatch(setIsCollapse(!isCollapse))}
-              >
-                {isCollapse ? (
-                  <ChevronRight size={20} />
-                ) : (
-                  <ChevronLeft size={20} />
-                )}
-              </button>
-            )}
           </div>
 
           {/* Navigation */}

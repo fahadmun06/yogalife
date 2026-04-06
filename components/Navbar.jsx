@@ -129,14 +129,14 @@ export default function Navbar() {
         }`}
       >
         <div
-          className={`container mx-auto px-4 sm:px-6 ${isPremiumUser ? "lg:px-16 font-poppins " : "lg:px-0"}`}
+          className={`container mx-auto px-4 sm:px-6 ${isPremiumUser ? "lg:px-16 font-poppins " : "lg:px-5"}`}
         >
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link className="flex-shrink-0" href="/">
               <img
                 alt="Logo"
-                className="w-16 cursor-pointer rounded-full"
+                className="w-14 cursor-pointer rounded-full"
                 src="/logo.jpg"
               />
             </Link>

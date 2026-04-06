@@ -8,6 +8,7 @@ import AppLoader from "@/components/AppLoader";
 import FloatingWaitlistButton from "@/components/FloatingWaitlistButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useGeneral } from "@/hooks/useGeneral";
+import ApiFunction from "@/components/api/apiFuntions";
 
 export default function MainLayout({ children }) {
   const restrictRoute = [
@@ -20,14 +21,40 @@ export default function MainLayout({ children }) {
     "/cancel",
     "/success",
   ];
-  const pathname = usePathname();
   const { user, refreshSession } = useAuth();
-  const { isLoading, loadingMessage, setAppLoading } = useGeneral();
+  const {
+    isLoading,
+    loadingMessage,
+    setAppLoading,
+    globalHeroImage,
+    setGlobalHero,
+  } = useGeneral();
+  const { get } = ApiFunction();
+  const pathname = usePathname();
   const isDashboard = pathname.startsWith("/dashboard");
 
   useEffect(() => {
     refreshSession();
   }, []);
+
+  // Fetch global hero image if not exists
+  useEffect(() => {
+    const fetchGlobalBanner = async () => {
+      if (!globalHeroImage) {
+        try {
+          const res = await get("/banner?type=all_pages");
+
+          if (res?.success && res?.data) {
+            setGlobalHero(res.data);
+          }
+        } catch {
+          // Catch and handle error silently
+        }
+      }
+    };
+
+    fetchGlobalBanner();
+  }, [globalHeroImage]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -54,9 +81,11 @@ export default function MainLayout({ children }) {
         !!user ? null : (
           <YogasticFooter />
         )}
-        {!isDashboard && !pathname.startsWith("/premium") && !user && (
-          <FloatingWaitlistButton />
-        )}
+        {!isDashboard &&
+          !pathname.startsWith("/premium") &&
+          !pathname.startsWith("/auth") &&
+          !user &&
+          !restrictRoute.includes(pathname) && <FloatingWaitlistButton />}
       </div>
     </>
   );

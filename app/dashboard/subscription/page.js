@@ -73,6 +73,7 @@ export default function SubscriptionPage() {
   };
 
   const fetchData = async () => {
+    if (!user) return;
     try {
       setLoading(true);
       const [pmRes, histRes] = await Promise.all([

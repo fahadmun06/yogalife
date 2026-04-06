@@ -1,3 +1,6 @@
+/* eslint-disable react/no-unknown-property */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -100,7 +103,7 @@ const YogasticFooter = () => {
                     FAQ
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link href="#">Terms & Conditions</Link>
                 </li>
                 <li>
@@ -108,7 +111,7 @@ const YogasticFooter = () => {
                 </li>
                 <li>
                   <Link href="#">Refunds & Returns Policy</Link>
-                </li>
+                </li> */}
               </ul>
             </div>
 
@@ -116,18 +119,22 @@ const YogasticFooter = () => {
             <div className="footer-col">
               <h3 className="footer-heading">Contact Info</h3>
               <ul className="contact-info">
-                <li className="contact-item">
+                {/* <li className="contact-item">
                   <i className="fas fa-phone-alt" />
                   <span>1-876-480-1887</span>
-                </li>
+                </li> */}
                 <li className="contact-item">
                   <i className="fas fa-envelope" />
-                  <span>tinashaii@butterflysanctuaryja.com</span>
+                  <span>info@butterflysanctuary.com</span>
                 </li>
                 <li className="contact-item">
                   <i className="fas fa-map-marker-alt" />
-                  <span>37 Bellevue drive, Kingston, Jamaica</span>
+                  <span>Kingston, Jamaica</span>
                 </li>
+                {/* <li className="contact-item">
+                  <i className="fas fa-map-marker-alt" />
+                  <span>37 Bellevue drive, Kingston, Jamaica</span>
+                </li> */}
               </ul>
             </div>
           </div>
