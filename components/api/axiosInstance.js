@@ -4,9 +4,8 @@ import Cookies from "js-cookie";
 import { decryptData } from "./encrypted";
 
 export const axiosInstance = axios.create({
-  // baseURL: "https://tina-backend-zeta.vercel.app/api/",
   baseURL: "https://tina-backend-production-c911.up.railway.app/api/",
-  // baseURL: 'http://localhost:8000/api/',
+  // baseURL: "http://localhost:9000/api/",
 });
 
 axiosInstance.interceptors.request.use(

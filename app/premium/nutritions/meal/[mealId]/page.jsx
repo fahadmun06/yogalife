@@ -185,10 +185,16 @@ export default function MealDetailsPage() {
                   meal.ingredients.map((ing, i) => (
                     <Chip
                       key={i}
-                      className="bg-slate-50 text-slate-600 border-none px-4 py-2 h-auto text-sm font-medium"
-                      startContent={
-                        <Hash className="text-[#6D735C]/50" size={14} />
-                      }
+                      className="bg-slate-50 capitalize rounded-xl text-slate-600 border-none px-4 py-2 h-auto text-sm font-medium max-w-full"
+                      classNames={{
+                        content: "whitespace-normal break-words",
+                      }}
+                      // startContent={
+                      //   <Hash
+                      //     className="text-[#6D735C]/50 shrink-0"
+                      //     size={14}
+                      //   />
+                      // }
                       variant="flat"
                     >
                       {ing}

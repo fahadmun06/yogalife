@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@heroui/skeleton";
 
-import ApiFunction from "../api/apiFuntions";
+import { useLandingPage } from "../../hooks/useLandingPage";
 
 export default function HeroNew() {
+  const { hero, getHero } = useLandingPage();
   const [banner, setBanner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState(0);
-  const { get } = ApiFunction();
 
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform";
@@ -64,47 +64,34 @@ export default function HeroNew() {
   const [slides, setSlides] = useState(staticSlides);
 
   useEffect(() => {
-    fetchBanner();
-  }, []);
+    const loadHero = async () => {
+      const data = await getHero();
 
-  const fetchBanner = async () => {
-    try {
-      const res = await get("/banner?type=free");
-
-      if (
-        res.success &&
-        res.data &&
-        res.data.slides &&
-        res.data.slides.length > 0
-      ) {
-        setBanner(res.data);
-        // Map the dynamic banner slides
-        const dynamicSlides = res.data.slides.map((s) => ({
-          title: s.title,
-          heading: s.heading,
-          text: s.description,
-          link: s.link || FORM_URL,
-          backgroundImage: res.data.backgroundImage,
+      if (data) {
+        setBanner(data);
+        const dynamicSlides = data?.slides?.map((s) => ({
+          title: s?.title,
+          heading: s?.heading,
+          text: s?.description,
+          link: s?.link || FORM_URL,
+          backgroundImage: data?.backgroundImage,
           type: "dynamic",
         }));
 
         setSlides(dynamicSlides);
-      } else {
-        setSlides(staticSlides);
       }
-    } catch (err) {
-      console.error("Error fetching banner:", err);
-      setSlides(staticSlides);
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+
+    loadHero();
+  }, []);
 
   useEffect(() => {
+    setActive(0); // Reset active index when slides change to avoid out-of-bounds
     if (slides.length > 1) {
       const timer = setInterval(() => {
         setActive((prev) => (prev + 1) % slides.length);
-      }, 7000); // Increased to 7s for better readability of dynamic content
+      }, 7000);
 
       return () => clearInterval(timer);
     }
@@ -130,8 +117,8 @@ export default function HeroNew() {
     );
   }
 
-  const activeSlide = slides[active];
-  const bgImage = activeSlide.backgroundImage
+  const activeSlide = slides[active] || slides[0] || {};
+  const bgImage = activeSlide?.backgroundImage
     ? `url('${activeSlide.backgroundImage}')`
     : active === 0 && !banner
       ? "url('/heromd.png')"

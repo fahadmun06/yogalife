@@ -1,8 +1,11 @@
+/* eslint-disable react/no-unknown-property */
 "use client";
 
-import React from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useLandingPage } from "../hooks/useLandingPage";
+import { Skeleton } from "@heroui/skeleton";
 
 const fadeUp = (delay = 0) => ({
   hidden: { opacity: 0, y: 40 },
@@ -11,271 +14,173 @@ const fadeUp = (delay = 0) => ({
 
 export default function RetreatHero() {
   const router = useRouter();
+  const { getRetro } = useLandingPage();
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadRetro = async () => {
+      const retroData = await getRetro();
+      if (retroData) {
+        setContent(retroData);
+      }
+      setLoading(false);
+    };
+
+    loadRetro();
+  }, [getRetro]);
+
+  if (loading) {
+    return (
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 max-w-7xl space-y-12">
+          <Skeleton className="h-20 w-3/4 mx-auto rounded-xl" />
+          <Skeleton className="h-[400px] w-full rounded-2xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Skeleton className="h-60 w-full rounded-xl" />
+            <Skeleton className="h-60 w-full rounded-xl" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // If no content is available after loading, don't render the section
+  if (!content) {
+    return null;
+  }
 
   return (
-    <section id="wellness-retreat" className="py-16 bg-white overflow-hidden">
+    <section className="py-16 bg-white overflow-hidden" id="wellness-retreat">
       <div className="container mx-auto px-6 max-w-7xl">
-        {/* Top Heading */}
         <motion.div
-          className="text-center mb-12"
+          dangerouslySetInnerHTML={{ __html: content?.content }}
+          className="retreat-content"
           initial="hidden"
+          variants={fadeUp(0.1)}
+          viewport={{ once: true }}
           whileInView="visible"
-          viewport={{ once: true }}
-        >
-          <motion.h1
-            className="text-4xl md:text-5xl font-bold text-primary mb-4"
-            style={{ fontFamily: "serif" }}
-            variants={fadeUp(0.1)}
-          >
-            The Butterfly Sanctuary
-          </motion.h1>
+        />
 
-          <motion.h2
-            className="text-2xl md:text-3xl font-semibold text-primary mb-4"
-            style={{ fontFamily: "serif" }}
-            variants={fadeUp(0.2)}
-          >
-            Pilates Wellness Retreat
-          </motion.h2>
-
-          <motion.p
-            className="text-lg text-primary italic mb-6"
-            style={{ fontFamily: "serif" }}
-            variants={fadeUp(0.3)}
-          >
-            Pilates & Wellness Retreats in Jamaica | Mind-Body Reset with
-            Tinashaii
-          </motion.p>
-
-          <motion.p className="text-gray-700 mb-8" variants={fadeUp(0.4)}>
-            &quot;Pilates retreat Jamaica,&quot; &quot;wellness retreat Caribbean,&quot; <br />
-            &quot;gut health reset,&quot; &quot;holistic lifestyle coaching.&quot;
-          </motion.p>
-
-          <motion.h3
-            className="text-2xl font-bold text-gray-900 mb-8"
-            variants={fadeUp(0.5)}
-          >
-            Reset • Realign • Restore
-          </motion.h3>
-        </motion.div>
-
-        {/* Main Description */}
-        <motion.div
-          className="mb-12 text-gray-800 leading-relaxed"
-          initial="hidden"
-          whileInView="visible"
-          variants={fadeUp(0.2)}
-          viewport={{ once: true }}
-        >
-          <p className="mb-4">
-            Join a holistic sanctuary anywhere in Jamaica and immerse yourself
-            in a <strong>transformative retreat experience</strong> designed to
-            help you recharge, realign your body, and restore inner balance. Our
-            pop-up <strong>Pilates & Wellness Retreats</strong> bring together
-            mindful movement, nourishing food, and holistic self-care practices
-            that will leave you feeling lighter, stronger, and deeply renewed
-            inside and out.
-          </p>
-        </motion.div>
-
-        {/* What's Included */}
-        <motion.div
-          className="mb-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          <motion.h3
-            className="text-2xl font-semibold text-gray-900 mb-6 flex items-center"
-            variants={fadeUp(0.1)}
-          >
-            <span className="text-yellow-500 mr-2">✨</span> What&apos;s
-            Included
-          </motion.h3>
-
-          <motion.p className="mb-4 text-gray-800" variants={fadeUp(0.2)}>
-            Your retreat package is thoughtfully curated to nurture your{" "}
-            <strong>mind, body, and soul</strong>:
-          </motion.p>
-
-          <motion.ul className="space-y-3 text-gray-700" variants={fadeUp(0.3)}>
-            {[
-              [
-                "Pilates Sessions",
-                "Energizing and restorative pilates sessions in a serene outdoor setting.",
-              ],
-              [
-                "Wellness Workshops",
-                "Learn tools for gut health, blood sugar balance, and lifestyle shifts.",
-              ],
-              [
-                "Wholesome Nutrition",
-                "Fresh, locally inspired meals designed to support healing and energy.",
-              ],
-              [
-                "Mindfulness Practices",
-                "Guided breathwork, journaling, and rituals for grounding and clarity.",
-              ],
-              [
-                "Island Experiences",
-                "Relax with coconut water under the palms, ocean dips, and gentle nature walks.",
-              ],
-              [
-                "Community Connection",
-                "A safe, supportive space to connect with like-minded women.",
-              ],
-            ].map(([title, desc], i) => (
-              <li key={i} className="flex items-start">
-                <span className="w-2 h-2 bg-gray-900 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <div>
-                  <strong>{title}</strong> – {desc}
-                </div>
-              </li>
-            ))}
-          </motion.ul>
-        </motion.div>
-
-        {/* Pilates Session Image */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          viewport={{ once: true }}
-        >
-          <img
-            src="/yoga/img7.jpg"
-            alt="Pilates session in outdoor garden setting"
-            className="w-full h-[400px] object-cover rounded-lg shadow-lg"
-          />
-        </motion.div>
-
-        {/* Two Column Layout */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Left Column */}
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            variants={fadeUp(0.2)}
-            viewport={{ once: true }}
-          >
-            <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-              <span className="text-pink-500 mr-2">🌸</span> Sample Day at the
-              Retreat
-            </h3>
-            <ul className="space-y-3 text-gray-700">
-              {[
-                "Morning: Sunrise Pilates flow",
-                "Fresh tropical fruits & nourishing local dishes",
-                "Workshop on gut health & holistic living",
-                "Free time to rest, swim, or explore",
-                "Restorative Pilates & journaling session",
-                "Wholesome farm-to-table dining, shared in community",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start">
-                  <span className="w-2 h-2 bg-gray-900 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Right Column */}
-          <motion.div
-            initial={{ opacity: 0, x: 60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <img
-              src="/yoga/img14.jpg"
-              alt="Outdoor pilates session with pink yoga mats"
-              className="w-full h-[300px] object-cover rounded-lg shadow-lg"
-            />
-          </motion.div>
-        </div>
-
-        {/* Who This Retreat is For */}
-        <motion.div
-          className="mb-12"
-          initial="hidden"
-          whileInView="visible"
-          variants={fadeUp(0.2)}
-          viewport={{ once: true }}
-        >
-          <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-            <span className="text-orange-500 mr-2">🧘</span> Who This Retreat is
-            For
-          </h3>
-          <p className="mb-4 text-gray-800">
-            This retreat is for you if you are ready to...
-          </p>
-          <ul className="space-y-3 text-gray-700">
-            {[
-              "Reconnect with your body and restore balance",
-              "Take a break from stress, fatigue, or burnout",
-              "Deepen your Pilates practice in a supportive environment",
-              "Learn how to use food as medicine and reset your lifestyle",
-              "Experience wellness in the heart of the Caribbean",
-            ].map((item, i) => (
-              <li key={i} className="flex items-start">
-                <span className="w-2 h-2 bg-gray-900 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.div
-          className="text-center mb-12"
-          initial="hidden"
-          whileInView="visible"
-          variants={fadeUp(0.3)}
-          viewport={{ once: true }}
-        >
-          <button
-            onClick={() => router.push("/auth/signup")}
-            className="inline-block cursor-pointer bg-primary text-white px-8 py-3 rounded-tl-2xl rounded-br-2xl shadow-md hover:bg-primary/90 transition-all duration-300"
-          >
-            JOIN THE WAIT LIST
-          </button>
-          <p className="text-primary text-lg mt-6">
-            More details coming soon….
-            <br />
-            Secure your spot now, pay the rest later.
-          </p>
-        </motion.div>
-
-        {/* Bottom Two Images */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {[
-            {
-              src: "/yoga/img13.jpg",
-              alt: "Welcome sign in tropical garden setting",
-            },
-            {
-              src: "/yoga/img11.jpg",
-              alt: "Woman doing pilates stretch in tropical setting",
-            },
-          ].map((img, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: i * 0.3 }}
-              viewport={{ once: true }}
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                className="w-full h-[350px] object-cover rounded-lg shadow-lg"
-              />
-            </motion.div>
-          ))}
-        </div>
+        <style global jsx>{`
+          .retreat-content {
+            font-family: inherit;
+            color: #1a202c;
+          }
+          .retreat-content h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #4a3b4c;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-family: serif;
+          }
+          .retreat-content h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #4a3b4c;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-family: serif;
+          }
+          .retreat-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+          }
+          .retreat-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            color: #2d3748;
+            font-size: 1.125rem;
+          }
+          .retreat-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+          }
+          .retreat-content li {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-size: 1.125rem;
+          }
+          /* CKEditor Image Handling */
+          .retreat-content figure {
+            margin: 2rem auto;
+            display: table;
+          }
+          .retreat-content figure.image-style-side {
+            float: right;
+            margin-left: 1.5rem;
+            max-width: 50%;
+          }
+          .retreat-content figure.image-style-align-left {
+            float: left;
+            margin-right: 1.5rem;
+          }
+          .retreat-content figure.image-style-align-right {
+            float: right;
+            margin-left: 1.5rem;
+          }
+          .retreat-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            display: block;
+            margin: 0 auto;
+          }
+          .retreat-content p img {
+            display: inline-block;
+            margin: 10px;
+            vertical-align: middle;
+          }
+          .retreat-content strong {
+            color: #1a202c;
+            font-weight: 700;
+          }
+          .retreat-content .custom-button {
+            display: inline-block;
+            cursor: pointer;
+            background-color: #4a3b4c;
+            color: white !important;
+            padding: 1rem 2.5rem;
+            text-decoration: none !important;
+            border-top-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            margin: 2rem auto;
+            display: table;
+          }
+          .retreat-content .custom-button:hover {
+            background-color: #3b2f3d;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          }
+        `}</style>
       </div>
+      {/* <motion.div
+        className="text-center !mx-auto mt-16 pb-12"
+        initial="hidden"
+        variants={fadeUp(0.3)}
+        viewport={{ once: true }}
+        whileInView="visible"
+      >
+        <button
+          className="inline-block !mx-auto cursor-pointer bg-primary text-white px-10 py-4 rounded-tl-2xl rounded-br-2xl shadow-xl hover:bg-[#4a3b4c] transition-all duration-300 font-bold tracking-wide"
+          onClick={() => router.push("/auth/signup")}
+        >
+          JOIN THE WAIT LIST
+        </button>
+        <p className="text-[#4a3b4c] text-xl mt-8 font-medium italic">
+          More details coming soon….
+          <br />
+          Secure your spot now, pay the rest later.
+        </p>
+      </motion.div> */}
     </section>
   );
 }

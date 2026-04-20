@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useEffect } from "react";
+import { Skeleton } from "@heroui/skeleton";
+
+import { useLandingPage } from "../hooks/useLandingPage";
 
 import DiscountSection from "./DiscountSection";
 import PageHero from "./NewSimpleUI/PageHero";
 
-const faqs = [
+const staticFaqs = [
   {
     question: "How does 1:1 Health Coaching work?",
     answer:
@@ -154,7 +158,25 @@ const AccordionContent = ({ children, isOpen, className = "" }) => {
 };
 
 export default function FAQSection() {
+  const { getFaqs } = useLandingPage();
+  const [data, setData] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFaqs = async () => {
+      const res = await getFaqs();
+
+      if (res && res.length > 0) {
+        setData(res);
+      } else {
+        setData(staticFaqs);
+      }
+      setLoading(false);
+    };
+
+    loadFaqs();
+  }, [getFaqs]);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -202,29 +224,37 @@ export default function FAQSection() {
 
           {/* Hero UI Accordion */}
           <div className="mt-10 text-left">
-            <Accordion className="w-full max-w-3xl mx-auto" type="single">
-              {faqs.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                >
-                  <AccordionItem value={`item-${index}`}>
-                    <AccordionTrigger
-                      isOpen={openIndex === index}
-                      onClick={() => toggleFAQ(index)}
-                    >
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent isOpen={openIndex === index}>
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                </motion.div>
-              ))}
-            </Accordion>
+            {loading ? (
+              <div className="w-full max-w-3xl mx-auto space-y-4">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <Accordion className="w-full max-w-3xl mx-auto" type="single">
+                {data.map((faq, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                  >
+                    <AccordionItem value={`item-${index}`}>
+                      <AccordionTrigger
+                        isOpen={openIndex === index}
+                        onClick={() => toggleFAQ(index)}
+                      >
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent isOpen={openIndex === index}>
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </motion.div>
+                ))}
+              </Accordion>
+            )}
           </div>
         </div>
       </section>

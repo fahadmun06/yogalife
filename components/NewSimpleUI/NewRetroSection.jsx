@@ -1,10 +1,14 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable react/no-unknown-property */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import axios from "axios";
+import { retroApi } from "../api/ApiRoutesFile";
 
 // ✅ Yup validation schema
 const schema = yup.object().shape({
@@ -18,6 +22,8 @@ const schema = yup.object().shape({
 
 export default function NewRetroSection() {
   const [showForm, setShowForm] = useState(false);
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // ✅ react-hook-form setup
   const {
@@ -30,39 +36,101 @@ export default function NewRetroSection() {
     defaultValues: { name: "", email: "", phone: "" },
   });
 
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:9000/api";
+        const response = await axios.get(`${baseUrl}/${retroApi.get}`);
+        if (
+          response.data.success &&
+          response.data.data &&
+          response.data.data.content
+        ) {
+          setContent(response.data.data.content);
+        }
+      } catch (error) {
+        console.error("Error fetching retro content:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
   const onSubmit = (data) => {
     console.log("Form submitted:", data);
-
-    // Simple success feedback
     alert("🎉 Successfully joined The Butterfly Sanctuary!");
     reset();
     setShowForm(false);
   };
 
+  if (!loading && content) {
+    return (
+      <section className="relative bg-white pt-20 md:pt-28 overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="retro-content"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
+        <style jsx global>{`
+          .retro-content h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 2rem;
+          }
+          .retro-content h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+          }
+          .retro-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.75;
+            color: #4a5568;
+            font-size: 1.125rem;
+          }
+          .retro-content ul {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 2rem;
+          }
+          .retro-content li {
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 1.5rem;
+          }
+          .retro-content li:before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #4a3b4c;
+          }
+          .retro-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1rem;
+            margin: 2.5rem 0;
+          }
+          .retro-content span.text-primary {
+            color: #4a3b4c;
+          }
+        `}</style>
+      </section>
+    );
+  }
+
   return (
     <section className="relative bg-white pt-20 md:pt-28 overflow-hidden">
-      <motion.img
-        alt="left design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute left-0 top-10 hidden md:block"
-        height={236}
-        initial={{ opacity: 0, x: -80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-left-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={233}
-      />
-
-      <motion.img
-        alt="right design"
-        animate={{ opacity: 1, x: 0 }}
-        className="absolute right-0 top-20 hidden md:block"
-        height={267}
-        initial={{ opacity: 0, x: 80 }}
-        src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/hero-right-design-1.png"
-        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-        width={193}
-      />
-
       <div className="container mx-auto px-6 text-center relative z-10">
         <motion.h1
           className="text-4xl md:text-5xl font-bold text-gray-800"
@@ -220,9 +288,6 @@ export default function NewRetroSection() {
         )}
       </div>
 
-      {/* Background Accent */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent z-0" />
-
       <div className="relative bg-white py-16 md:py-20">
         <div className="container mx-auto px-6">
           <motion.div
@@ -233,7 +298,7 @@ export default function NewRetroSection() {
             whileInView={{ opacity: 1, y: 0 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              What You'll Get Inside
+              What You&apos;ll Get Inside
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Your membership includes:

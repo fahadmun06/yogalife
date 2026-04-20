@@ -32,6 +32,7 @@ import {
   incrementUnreadCount,
 } from "../../../store/slices/notificationSlice";
 import { useSocket } from "../../../context/SocketProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 const NotificationBell = () => {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ const NotificationBell = () => {
   const [searchInput, setSearchInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const socket = useSocket();
+  const { userData } = useAuth();
 
   const { notifications, unreadCount, filter, pagination, loading } =
     useSelector((state) => state.notification);
@@ -64,12 +66,14 @@ const NotificationBell = () => {
 
   // Fetch initial unread count
   useEffect(() => {
-    fetchUnreadCount();
-  }, []);
+    if (userData) {
+      fetchUnreadCount();
+    }
+  }, [userData]);
 
   // Fetch notifications when dropdown opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && userData) {
       fetchNotifications();
     }
   }, [isOpen, filter]);

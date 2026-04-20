@@ -1,25 +1,36 @@
+/* eslint-disable @next/next/no-img-element */
+
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const images = [
-  {
-    id: 1,
-    src: "/result/img2.jpg",
-    alt: "Client transformation before and after",
-  },
-  {
-    id: 2,
-    src: "/result/img1.jpg",
-    alt: "Weight loss transformation",
-  },
-];
+import { useLandingPage } from "../hooks/useLandingPage";
 
 export default function TransformationGallery() {
+  const { getTransformations } = useLandingPage();
+  const [images, setImages] = useState([]);
+  const [settings, setSettings] = useState({
+    tagline: "Transformation Gallery",
+    title: "Pictures of client Transformation",
+  });
+  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    const loadTransformations = async () => {
+      const data = await getTransformations();
+
+      if (data) {
+        if (data?.images) setImages(data?.images);
+        if (data?.settings) setSettings(data?.settings);
+      }
+      setLoading(false);
+    };
+
+    loadTransformations();
+  }, []);
 
   const openFullscreen = (imageId) => {
     setSelectedImage(imageId);
@@ -30,9 +41,9 @@ export default function TransformationGallery() {
   };
 
   const navigateImage = (direction) => {
-    if (selectedImage === null) return;
+    if (selectedImage === null || images.length === 0) return;
 
-    const currentIndex = images.findIndex((img) => img.id === selectedImage);
+    const currentIndex = images.findIndex((img) => img._id === selectedImage);
     let newIndex;
 
     if (direction === "prev") {
@@ -41,115 +52,132 @@ export default function TransformationGallery() {
       newIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
     }
 
-    setSelectedImage(images[newIndex].id);
+    setSelectedImage(images[newIndex]._id);
   };
 
   const selectedImageData = selectedImage
-    ? images.find((img) => img.id === selectedImage)
+    ? images.find((img) => img._id === selectedImage)
     : null;
 
   return (
-    <>
-      <motion.h4
-        className="text-sm  uppercase text-center tracking-wider text-primary"
-        initial={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.6 }}
-        whileInView={{ opacity: 1, y: 0 }}
-      >
-        Transformation Gallery
-      </motion.h4>
-      <motion.h2
-        className="text-3xl md:text-4xl text-center font-bold mb-12"
-        initial={{ opacity: 0, y: -40 }}
-        transition={{ duration: 0.7 }}
-        whileInView={{ opacity: 1, y: 0 }}
-      >
-        Pictures of client Transformation
-      </motion.h2>
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-1 mb-28 mt-12 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {images.map((image) => (
-          <div
-            key={image.id}
-            className="group cursor-pointer overflow-hidden bg-card hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
-            onClick={() => openFullscreen(image.id)}
-          >
-            <div className="relative aspect-[3/2] overflow-hidden">
-              <Image
-                fill
-                alt={image.alt}
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                src={image.src || "/result/img1.jpg"}
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-            </div>
-            {/* <div className="p-6">
-              <h3 className="font-semibold text-card-foreground mb-2 text-balance">
-                {image.caption}
-              </h3>
-              <div className="flex justify-between items-center text-sm text-muted-foreground">
-                <span className="font-medium">{image.clientName}</span>
-                <span>{image.transformationDate}</span>
+    <section className="py-20 font-poppins overflow-hidden">
+      <div className="container mx-auto px-4">
+        <motion.h4
+          className="text-[10px] md:text-xs font-black uppercase text-center tracking-[0.3em] text-primary mb-3"
+          initial={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          whileInView={{ opacity: 1, y: 0 }}
+        >
+          {settings.tagline}
+        </motion.h4>
+        <motion.h2
+          className="text-3xl md:text-5xl text-center font-playfair font-black mb-16 text-black"
+          initial={{ opacity: 0, y: -40 }}
+          transition={{ duration: 0.7 }}
+          viewport={{ once: true }}
+          whileInView={{ opacity: 1, y: 0 }}
+        >
+          {settings.title}
+        </motion.h2>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {loading ? (
+            [1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="aspect-square bg-gray-100 rounded-2xl animate-pulse flex items-center justify-center"
+              >
+                <ImageIcon className="text-gray-200" size={32} />
               </div>
-            </div> */}
-          </div>
-        ))}
+            ))
+          ) : images.length > 0 ? (
+            images.map((image, i) => (
+              <motion.div
+                key={image._id}
+                className="group cursor-pointer relative rounded-2xl overflow-hidden shadow-lg bg-gray-100 border-2 border-white"
+                initial={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                onClick={() => openFullscreen(image._id)}
+              >
+                <div className="relative aspect-square">
+                  <img
+                    alt={image.alt || "Transformation Picture"}
+                    className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                    src={image.src}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-primary/10 transition-all duration-500" />
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center text-gray-400 italic font-medium">
+              No transformations shared yet.
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Full-screen Modal */}
-      {selectedImage && selectedImageData && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
-            {/* Close Button */}
-            <button
-              className="absolute top-4 right-4 z-10 rounded-full p-1 bg-background/90 hover:bg-background/40 shadow-lg text-popover-foreground"
-              onClick={closeFullscreen}
-            >
-              <X className="h-6 w-6" />
-            </button>
+      {/* Full-screen Modal (Lightbox) */}
+      <AnimatePresence>
+        {selectedImage && selectedImageData && (
+          <motion.div
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-8"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Close Button */}
+              <button
+                className="absolute top-0 right-0 z-50 rounded-full p-2 bg-white/10 hover:bg-white/20 text-white transition-all transform hover:rotate-90"
+                onClick={closeFullscreen}
+              >
+                <X className="h-6 w-6 md:h-8 md:w-8" />
+              </button>
 
-            {/* Navigation Buttons */}
-            <button
-              className="absolute left-4 top-1/2 rounded-full p-1 -translate-y-1/2 z-10 bg-background/90 hover:bg-background/40 shadow-lg text-popover-foreground"
-              onClick={() => navigateImage("prev")}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
+              {/* Navigation Buttons */}
+              <button
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 bg-white/5 hover:bg-white/15 text-white transition-all shadow-2xl backdrop-blur-sm"
+                onClick={() => navigateImage("prev")}
+              >
+                <ChevronLeft className="h-8 w-8 md:h-12 md:w-12" />
+              </button>
 
-            <button
-              className="absolute right-4 top-1/2 rounded-full p-1 -translate-y-1/2 z-10 bg-background/90 hover:bg-background/40 shadow-lg text-popover-foreground"
-              onClick={() => navigateImage("next")}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
+              <button
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 bg-white/5 hover:bg-white/15 text-white transition-all shadow-2xl backdrop-blur-sm"
+                onClick={() => navigateImage("next")}
+              >
+                <ChevronRight className="h-8 w-8 md:h-12 md:w-12" />
+              </button>
 
-            {/* Main Image */}
-            <div className="relative w-full h-full max-w-5xl max-h-[80vh] mx-auto">
-              <Image
-                fill
-                priority
-                alt={selectedImageData.alt}
-                className="object-contain"
-                sizes="100vw"
-                src={selectedImageData.src || "/result/img1.jpg"}
-              />
+              {/* Main Image Container */}
+              <motion.div
+                animate={{ scale: 1, opacity: 1 }}
+                className="relative w-full h-full max-w-6xl max-h-[85vh] shadow-[0_0_100px_rgba(36,180,126,0.1)] border-8 border-white/5 rounded-2xl overflow-hidden"
+                initial={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", damping: 25 }}
+              >
+                <img
+                  alt={selectedImageData.alt || "Transformation View"}
+                  className="object-contain w-full h-full"
+                  src={selectedImageData.src}
+                />
+              </motion.div>
+
+              {/* Info Text */}
+              {/* <div className="absolute bottom-4 left-0 right-0 text-center">
+                <p className="text-white/40 text-xs tracking-widest uppercase font-black italic">
+                  Real Results, Real Impact
+                </p>
+              </div> */}
             </div>
-
-            {/* Image Info */}
-            {/* <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-popover-foreground bg-background/20 backdrop-blur-sm rounded-lg px-6 py-3">
-              <h3 className="font-semibold text-lg mb-1">
-                {selectedImageData.caption}
-              </h3>
-              <div className="flex items-center gap-4 text-sm opacity-90">
-                <span>{selectedImageData.clientName}</span>
-                <span>•</span>
-                <span>{selectedImageData.transformationDate}</span>
-              </div>
-            </div> */}
-          </div>
-        </div>
-      )}
-    </>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   );
 }

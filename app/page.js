@@ -7,32 +7,30 @@ import ContactSectionNew from "@/components/NewSimpleUI/ContactSectionNew";
 import Testimonials from "@/components/Testimonials";
 import Blog from "@/components/Blog";
 import RetreatHero from "@/components/RetreatHero";
+import NewRetroSection from "@/components/NewSimpleUI/NewRetroSection";
 import TransformationGallery from "@/components/TransformationGallery";
 import BooksGallery from "@/components/BooksGallery";
 import SubscriptionPage from "@/components/SubscriptionPage";
 
 export const metadata = {
   title: "Tinashaii | Take Your Yoga to the Next Level",
-  description: "Join Tinashaii for premium yoga sessions, personalized nutrition plans, and transformative wellness coaching.",
+  description:
+    "Join Tinashaii for premium yoga sessions, personalized nutrition plans, and transformative wellness coaching.",
 };
 
 export default function Home() {
   return (
     <div className="relative">
-      {/* <Hero /> */}
       <HeroNew />
-      {/* <Services /> */}
       <ServicesSectionNew />
       <AboutNew />
       <WhyChooseUsNew />
       <ButterflySection />
-      {/* <PricingSectionNew /> */}
       <SubscriptionPage />
       <ContactSectionNew />
       <Testimonials isPage={false} />
       <TransformationGallery />
       <BooksGallery />
-      {/* <NewRetroSection /> */}
       <RetreatHero />
       <Blog />
     </div>

@@ -107,6 +107,7 @@ export default function SubscriptionPage() {
   }, [isAuthenticated]);
 
   const fetchPaymentData = async () => {
+    if (!user) return;
     try {
       const pmRes = await get(stripeApi.getPaymentMethods);
       const fetchedPms = pmRes.data?.data || pmRes.data || [];

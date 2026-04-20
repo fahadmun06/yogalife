@@ -15,6 +15,7 @@ import packageReducer from "./slices/packageSlice";
 import userReducer from "./slices/userSlice";
 import generalReducer from "./slices/generalSlice";
 import notificationReducer from "./slices/notificationSlice";
+import landingPageReducer from "./slices/landingPageSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   general: generalReducer,
   notification: notificationReducer,
+  landingPage: landingPageReducer,
 });
 
 const persistConfig = {

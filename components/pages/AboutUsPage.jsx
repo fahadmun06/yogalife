@@ -6,21 +6,57 @@ import { motion } from "framer-motion";
 import Testimonials from "../Testimonials";
 import DiscountSection from "../DiscountSection";
 import PageHero from "../NewSimpleUI/PageHero";
+import { useLandingPage } from "../../hooks/useLandingPage";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@heroui/skeleton";
 
 const AboutUsPage = () => {
+  const { getAbout } = useLandingPage();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAbout = async () => {
+      const aboutData = await getAbout();
+      if (aboutData) {
+        setData(aboutData);
+      }
+      setLoading(false);
+    };
+    loadAbout();
+  }, [getAbout]);
+
+  if (loading) {
+    return (
+      <div className="space-y-12 pb-20">
+        <Skeleton className="h-[40vh] w-full" />
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 mt-20">
+            <Skeleton className="aspect-square w-full rounded-[50px]" />
+            <div className="space-y-6">
+              <Skeleton className="h-8 w-1/4" />
+              <Skeleton className="h-16 w-3/4" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
-        <title>About - TinasHaii</title>
+        <title>{data?.title || "About"} - TinasHaii</title>
         <meta
-          content="Meet Tina — Certified Health Coach, Fitness & Pilates. Founder of the Butterfly Sanctuary Holistic Health, helping you achieve balance in movement, nutrition, and mindset."
+          content={data?.description || "Meet Tina — Certified Health Coach, Fitness & Pilates."}
           name="description"
         />
       </Head>
 
       <PageHero
         breadcrumb={[{ label: "About", link: "/about" }]}
-        subtitle="Certified Health Coach • Fitness • Pilates"
+        subtitle={data?.tagline || "Certified Health Coach • Fitness • Pilates"}
         title="About"
       />
 
@@ -48,22 +84,11 @@ const AboutUsPage = () => {
                 alt="Tina - Health Coach"
                 className="w-full max-w-[570px] h-auto aspect-square 
                rounded-tl-[50px] rounded-br-[50px] 
-               object-cover object-bottom z-10 relative"
-                src="aboutnew.jpg"
+               object-cover object-bottom z-10 relative shadow-2xl"
+                src={data?.image || "aboutnew.jpg"}
                 transition={{ type: "spring", stiffness: 100, damping: 15 }}
                 whileHover={{ scale: 1.02 }}
               />
-
-              {/* Decorative overlay image */}
-              {/* <motion.img
-                alt="Design Element"
-                className="absolute -bottom-10 -right-10 w-[180px] md:w-[250px] hidden md:block z-20"
-                initial={{ opacity: 0, rotate: -30, scale: 0.8 }}
-                src="https://designingmedia.com/yogastic/wp-content/uploads/2022/07/about-us-design-element-1.png"
-                transition={{ duration: 1, ease: "easeOut" }}
-                viewport={{ once: true }}
-                whileInView={{ opacity: 1, rotate: 0, scale: 1 }}
-              /> */}
             </motion.div>
 
             {/* Content */}
@@ -75,58 +100,17 @@ const AboutUsPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
             >
               <h4 className="text-primary font-semibold text-sm uppercase tracking-wide">
-                Meet Tina
+                {data?.tagline || "Meet Tina"}
               </h4>
-              <h2 className="text-4xl font-bold text-gray-900 font-playfair">
-                Certified Health Coach • Fitness • Pilates
+              <h2 className="text-4xl font-bold text-gray-900 font-playfair leading-tight">
+                {data?.title || "Certified Health Coach • Fitness • Pilates"}
               </h2>
 
-              {/* Updated Tina Content */}
-              <div className="space-y-4 text-gray-600 leading-relaxed text-lg">
-                <p>
-                  Hi, I’m <span className="font-bold text-primary">Tina</span>,
-                  Founder and head coach at the{" "}
-                  <span className="italic">
-                    Butterfly Sanctuary Holistic Health
-                  </span>
-                  . My passion for health and fitness comes from my own journey
-                  of finding true balance with movement, nutrition, and mindset
-                  in a way that actually lasts.
-                </p>
-                <p>
-                  I know what it feels like to feel stuck, overwhelmed, or out
-                  of alignment with your body, and that’s exactly why I created
-                  this space: a sanctuary where transformation feels
-                  sustainable, enjoyable, and deeply personal.
-                </p>
-                <p>
-                  As a certified health coach through the{" "}
-                  <span className="font-semibold text-primary">
-                    Institute for Integrative Nutrition (IIN)
-                  </span>
-                  , I’ve learned how powerful it is to approach wellness
-                  holistically. For me, it wasn’t just about exercise or food
-                  alone — it was about weaving everything together: mind, body,
-                  and spirit.
-                </p>
-                <p>
-                  Pilates and strength training have been the foundation of how
-                  I transformed my own body, helping me build strength, tone,
-                  and confidence, while nutrition taught me how to fuel myself
-                  with the right foods for energy and healing.
-                </p>
-                <p>
-                  This passion for holistic wellness is what drives me to share
-                  tools that go beyond surface-level fixes. Here, you’ll find
-                  simple and effective practices that will help you feel strong,
-                  energized, and truly at home in your body — while actually
-                  enjoying the journey.
-                </p>
-                <p className="font-semibold text-primary">
-                  I can’t wait for you to join me in this sanctuary, where
-                  wellness becomes a lifestyle, not a quick fix.
-                </p>
-              </div>
+              {/* Dynamic Content */}
+              <div 
+                className="space-y-4 text-gray-600 leading-relaxed text-lg whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: data?.description }}
+              />
             </motion.div>
           </div>
         </div>

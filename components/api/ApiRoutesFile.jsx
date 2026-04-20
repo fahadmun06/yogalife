@@ -47,6 +47,56 @@ const userProfileApi = {
   update: "auth/update-profile",
 };
 
+const serviceApi = {
+  get: "services",
+  update: "services",
+};
+
+const aboutApi = {
+  get: "about",
+  update: "about",
+};
+
+const whyChooseUsApi = {
+  get: "why-choose-us",
+  update: "why-choose-us",
+};
+const butterflyApi = {
+  get: "butterfly",
+  update: "butterfly",
+};
+const testimonialsApi = {
+  getAll: "testimonials",
+};
+
+const newsletterApi = {
+  get: "newsletter",
+};
+
+const blogsApi = {
+  getAll: "blogs",
+  getSettings: "blogs/settings",
+};
+
+const transformationApi = {
+  getAll: "transformations",
+  getSettings: "transformations/settings",
+};
+
+const retroApi = {
+  get: "retro",
+  update: "retro",
+};
+
+const contactApi = {
+  get: "contact",
+  update: "contact",
+};
+
+const faqApi = {
+  get: "faqs",
+};
+
 export {
   refreshTokenApi,
   packageApi,
@@ -54,4 +104,18 @@ export {
   stripeApi,
   userProfileApi,
   transactionsApi,
+  serviceApi,
+  aboutApi,
+  whyChooseUsApi,
+  butterflyApi,
+  testimonialsApi,
+  newsletterApi,
+  blogsApi,
+  transformationApi,
+  retroApi,
+  contactApi,
+  faqApi,
 };
+
+
+

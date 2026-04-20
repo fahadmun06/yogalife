@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useLandingPage } from "../../hooks/useLandingPage";
+import { useEffect, useState } from "react";
 
 // ✅ Yup Validation Schema
 const schema = yup.object().shape({
@@ -22,6 +24,10 @@ const schema = yup.object().shape({
 });
 
 export default function ContactSectionNew() {
+  const { getContact } = useLandingPage();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const {
     handleSubmit,
     control,
@@ -31,6 +37,18 @@ export default function ContactSectionNew() {
     resolver: yupResolver(schema),
     mode: "onBlur",
   });
+
+  useEffect(() => {
+    const loadContact = async () => {
+      const contactData = await getContact();
+      if (contactData) {
+        setData(contactData);
+      }
+      setLoading(false);
+    };
+
+    loadContact();
+  }, [getContact]);
 
   const inputVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -52,7 +70,7 @@ export default function ContactSectionNew() {
   };
 
   return (
-    <section className="md:h-[80vh] bg-white overflow-hidden">
+    <section className="md:h-[80vh] bg-[#F4EDF5] overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 h-full">
         {/* Left Side - Form */}
         <div className="flex bg-[#F4EDF5] items-center justify-center h-full py-20 md:py-0 px-8 lg:px-16">
@@ -64,10 +82,10 @@ export default function ContactSectionNew() {
             whileInView={{ opacity: 1, x: 0 }}
           >
             <h4 className="text-[#98849A] font-medium tracking-wider text-sm uppercase">
-              GET IN TOUCH
+              {data?.tagline || "GET IN TOUCH"}
             </h4>
             <h2 className="text-3xl md:text-4xl font-playfair font-bold mt-2 leading-snug text-[#4A3B4C]">
-              Get a Free Consultation Now
+              {data?.title || "Get a Free Consultation Now"}
             </h2>
 
             <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -87,10 +105,11 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.firstName
-                          ? "border-red-500"
-                          : "border-gray-300"
-                          }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
+                          errors.firstName
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                         placeholder="First Name"
                         type="text"
                       />
@@ -118,8 +137,9 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.lastName ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
+                          errors.lastName ? "border-red-500" : "border-gray-300"
+                        }`}
                         placeholder="Last Name"
                         type="text"
                       />
@@ -147,8 +167,9 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.phone ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
+                          errors.phone ? "border-red-500" : "border-gray-300"
+                        }`}
                         placeholder="Phone"
                         type="text"
                       />
@@ -176,8 +197,9 @@ export default function ContactSectionNew() {
                     >
                       <input
                         {...field}
-                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.email ? "border-red-500" : "border-gray-300"
-                          }`}
+                        className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
+                          errors.email ? "border-red-500" : "border-gray-300"
+                        }`}
                         placeholder="Email"
                         type="email"
                       />
@@ -206,8 +228,9 @@ export default function ContactSectionNew() {
                   >
                     <textarea
                       {...field}
-                      className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${errors.message ? "border-red-500" : "border-gray-300"
-                        }`}
+                      className={`w-full border rounded-md px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all hover:scale-[1.02] focus:scale-[1.03] ${
+                        errors.message ? "border-red-500" : "border-gray-300"
+                      }`}
                       placeholder="Message"
                       rows="5"
                     />
@@ -245,8 +268,8 @@ export default function ContactSectionNew() {
         >
           <img
             alt="Contact Section"
-            className="w-full h-[80vh] object-cover"
-            src="img2.jpg"
+            className="w-full h-[80vh] object-cover px-8 md:px-0 py-8"
+            src={data?.image || "img2.jpg"}
           />
         </motion.div>
       </div>
