@@ -24,7 +24,7 @@ const AboutUsPage = () => {
       setLoading(false);
     };
     loadAbout();
-  }, [getAbout]);
+  }, []);
 
   if (loading) {
     return (

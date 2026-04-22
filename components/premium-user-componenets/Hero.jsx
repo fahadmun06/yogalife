@@ -22,7 +22,7 @@ export default function PremiumHero() {
 
   const fetchBanner = async () => {
     try {
-      const res = await get("/banner");
+      const res = await get("/banner?type=premium");
 
       if (res.success && res.data) {
         setBanner(res.data);

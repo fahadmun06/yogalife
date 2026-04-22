@@ -30,7 +30,7 @@ export default function WhyChooseUsNew() {
     <section className="py-16 bg-[#F4EDF5] overflow-hidden">
       <div className="container mx-auto text-center px-4">
         {/* Heading */}
-        <motion.p
+        <motion.div
           className="text-sm tracking-widest text-primary font-bold"
           initial={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.6 }}
@@ -42,7 +42,7 @@ export default function WhyChooseUsNew() {
           ) : (
             data?.tagline || "OUR SPECIALTIES"
           )}
-        </motion.p>
+        </motion.div>
 
         <motion.h2
           className="text-3xl md:text-4xl font-bold text-gray-800 mt-2 whitespace-pre-wrap"
@@ -58,7 +58,7 @@ export default function WhyChooseUsNew() {
           )}
         </motion.h2>
 
-        <motion.p
+        <motion.div
           className="mt-4 text-gray-600 max-w-2xl mx-auto"
           initial={{ opacity: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -70,7 +70,7 @@ export default function WhyChooseUsNew() {
           ) : (
             data?.description
           )}
-        </motion.p>
+        </motion.div>
 
         {/* Main Content */}
         <div className="relative mt-12 px-2 md:px-0 flex flex-col md:flex-row items-center justify-center gap-10">

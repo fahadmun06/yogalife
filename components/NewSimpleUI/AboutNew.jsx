@@ -13,7 +13,7 @@ export default function AboutSectionNew() {
 
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform";
-  console.log("aboutData", data);
+
   useEffect(() => {
     const loadAbout = async () => {
       const aboutData = await getAbout();

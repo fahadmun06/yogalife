@@ -1,9 +1,20 @@
-import React from "react";
+// import BooksGallery from "@/components/BooksGallery";
+import PageHero from "../../components/NewSimpleUI/PageHero";
 
-import BooksGallery from "@/components/BooksGallery";
+import Blog from "@/components/Blog";
 
 export default function page() {
-  return <BooksGallery isPage={true} />;
+  // return <BooksGallery isPage={true} />;
+  return (
+    <div className="pt-20">
+      <PageHero
+        breadcrumb={[{ label: "Books", link: "/books" }]}
+        subtitle="Sanctuary Fit Guides"
+        title="Books"
+      />
+      <Blog />
+    </div>
+  );
 }
 
 export const metadata = {

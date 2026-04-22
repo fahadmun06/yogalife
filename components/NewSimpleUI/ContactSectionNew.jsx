@@ -5,8 +5,12 @@ import { motion } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useLandingPage } from "../../hooks/useLandingPage";
 import { useEffect, useState } from "react";
+import { Spinner } from "@heroui/spinner";
+
+import { useLandingPage } from "../../hooks/useLandingPage";
+import ApiFunction from "../api/apiFuntions";
+import { supportApi } from "../api/ApiRoutesFile";
 
 // ✅ Yup Validation Schema
 const schema = yup.object().shape({
@@ -25,8 +29,10 @@ const schema = yup.object().shape({
 
 export default function ContactSectionNew() {
   const { getContact } = useLandingPage();
+  const { post } = ApiFunction();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     handleSubmit,
@@ -36,11 +42,19 @@ export default function ContactSectionNew() {
   } = useForm({
     resolver: yupResolver(schema),
     mode: "onBlur",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      phone: "",
+      email: "",
+      message: "",
+    },
   });
 
   useEffect(() => {
     const loadContact = async () => {
       const contactData = await getContact();
+
       if (contactData) {
         setData(contactData);
       }
@@ -48,7 +62,7 @@ export default function ContactSectionNew() {
     };
 
     loadContact();
-  }, [getContact]);
+  }, []);
 
   const inputVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -59,14 +73,28 @@ export default function ContactSectionNew() {
     }),
   };
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    addToast({
-      title: "Success",
-      description: "Form submitted successfully",
-      color: "success",
-    });
-    reset();
+  const onSubmit = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await post(supportApi.create, formData);
+
+      if (response && response.success) {
+        addToast({
+          title: "Success",
+          description: "Message sent successfully!",
+          color: "success",
+        });
+        reset();
+      }
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        color: "danger",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -246,12 +274,23 @@ export default function ContactSectionNew() {
               {/* Button */}
               <div className="flex justify-start pt-2">
                 <motion.button
-                  className="bg-[#8E7391] button cursor-pointer rounded-md hover:bg-[#79607D] text-white font-medium px-8 py-3 transition-all"
+                  className={`bg-[#8E7391] button rounded-md text-white font-medium px-8 py-3 transition-all flex items-center justify-center gap-2 ${
+                    isSubmitting
+                      ? "opacity-70 cursor-not-allowed"
+                      : "cursor-pointer hover:bg-[#79607D]"
+                  }`}
+                  disabled={isSubmitting}
                   type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={!isSubmitting ? { scale: 1.05 } : {}}
+                  whileTap={!isSubmitting ? { scale: 0.97 } : {}}
                 >
-                  Get Started
+                  {isSubmitting ? (
+                    <>
+                      <Spinner color="white" size="sm" /> Sending...
+                    </>
+                  ) : (
+                    "Get Started"
+                  )}
                 </motion.button>
               </div>
             </form>

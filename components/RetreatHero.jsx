@@ -4,8 +4,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useLandingPage } from "../hooks/useLandingPage";
 import { Skeleton } from "@heroui/skeleton";
+import { AlertCircle } from "lucide-react";
+
+import { useLandingPage } from "../hooks/useLandingPage";
 
 const fadeUp = (delay = 0) => ({
   hidden: { opacity: 0, y: 40 },
@@ -21,6 +23,7 @@ export default function RetreatHero() {
   useEffect(() => {
     const loadRetro = async () => {
       const retroData = await getRetro();
+
       if (retroData) {
         setContent(retroData);
       }
@@ -28,7 +31,7 @@ export default function RetreatHero() {
     };
 
     loadRetro();
-  }, [getRetro]);
+  }, []);
 
   if (loading) {
     return (
@@ -45,15 +48,28 @@ export default function RetreatHero() {
     );
   }
 
-  // If no content is available after loading, don't render the section
   if (!content) {
-    return null;
+    return (
+      <section className="py-24 bg-white flex flex-col items-center justify-center text-center">
+        <div className="container mx-auto px-6 max-w-7xl flex flex-col items-center">
+          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+            <AlertCircle className="w-10 h-10 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-600 mb-2">
+            No data found
+          </h2>
+          <p className="text-gray-500 text-lg">
+            Please add Retro Section from admin panels.
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (
     <section className="py-16 bg-white overflow-hidden" id="wellness-retreat">
       <div className="container mx-auto px-6 max-w-7xl">
-        <motion.div
+        <div
           dangerouslySetInnerHTML={{ __html: content?.content }}
           className="retreat-content"
           initial="hidden"

@@ -31,20 +31,29 @@ export const viewport = {
 
 export const metadata = {
   title: {
-    default: "Tinashaii | Yoga & Wellness",
-    template: "%s | Tinashaii",
+    default: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+    template: "%s | Tina Shay",
   },
-  description: "Take your yoga and wellness journey to the next level with Tinashaii. Premium workouts, nutrition plans, and holistic coaching.",
-  metadataBase: new URL("https://tinashaii.com"),
+  description: "Pilates, strength training, and holistic all-in-one sanctuary.",
+  metadataBase: new URL("https://www.butterflysanctuaryja.com"),
   alternates: {
     canonical: "/",
   },
-  keywords: ["Yoga", "Wellness", "Pilates", "Strength", "Nutrition", "Holistic Coaching", "Tinashaii"],
+  keywords: [
+    "Tina Shay",
+    "The Butterfly Sanctuary",
+    "Holistic Health",
+    "Pilates",
+    "Strength Training",
+    "Wellness",
+    "Sanctuary",
+  ],
   openGraph: {
-    title: "Tinashaii | Yoga & Wellness",
-    description: "Premium yoga and wellness platform.",
-    url: "https://tinashaii.com",
-    siteName: "Tinashaii",
+    title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+    description:
+      "Pilates, strength training, and holistic all-in-one sanctuary.",
+    url: "https://www.butterflysanctuaryja.com",
+    siteName: "Tina Shay",
     images: [
       {
         url: "/apple-icon.png",
@@ -57,8 +66,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tinashaii | Yoga & Wellness",
-    description: "Premium yoga and wellness platform.",
+    title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+    description:
+      "Pilates, strength training, and holistic all-in-one sanctuary.",
     images: ["/apple-icon.png"],
   },
 };

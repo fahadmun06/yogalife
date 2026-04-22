@@ -1,14 +1,16 @@
 "use client";
 
-import { axiosInstance } from "@/components/api/axiosInstance";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
+
 import {
   addNotification,
   incrementUnreadCount,
 } from "@/store/slices/notificationSlice";
+import { axiosInstance } from "@/components/api/axiosInstance";
 
 const SocketContext = createContext();
 
@@ -17,6 +19,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const socketRef = useRef(null);
+  const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth);
   const token = Cookies.get("accesstoken-tina-user");
@@ -58,6 +61,16 @@ export const SocketProvider = ({ children }) => {
           dispatch(incrementUnreadCount());
           dispatch(addNotification(notification));
 
+          // Play notification sound
+          try {
+            const audio = new Audio("/notification.mp3");
+            audio
+              .play()
+              .catch((err) => console.log("Audio playback blocked", err));
+          } catch (error) {
+            console.error("Error playing audio", error);
+          }
+
           toast[notification.type || "info"](notification.message, {
             duration: 5000,
             closeButton: true,
@@ -87,6 +100,7 @@ export const SocketProvider = ({ children }) => {
         );
     }
   }, [token, user?._id]);
+
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );

@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Package,
+  Ticket,
 } from "lucide-react";
 
 import { setIsCollapse } from "../store/slices/generalSlice";
@@ -22,6 +23,7 @@ const menuItems = [
   // { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Users, label: "Profile", href: "/dashboard/profile" },
   { icon: Package, label: "Subscription", href: "/dashboard/subscription" },
+  { icon: Ticket, label: "My Tickets", href: "/dashboard/tickets" },
 ];
 
 export function Sidebar() {

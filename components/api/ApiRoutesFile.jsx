@@ -97,6 +97,13 @@ const faqApi = {
   get: "faqs",
 };
 
+const supportApi = {
+  create: "support",
+  getAll: "support",
+  delete: (id) => `support/${id}`,
+  updateStatus: (id) => `support/${id}`,
+};
+
 export {
   refreshTokenApi,
   packageApi,
@@ -115,6 +122,7 @@ export {
   retroApi,
   contactApi,
   faqApi,
+  supportApi,
 };
 
 

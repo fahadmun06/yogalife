@@ -7,8 +7,12 @@ import { motion } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
-import { retroApi } from "../api/ApiRoutesFile";
+import { addToast } from "@heroui/toast";
+import { Spinner } from "@heroui/spinner";
+
+import { supportApi } from "../api/ApiRoutesFile";
+import ApiFunction from "../api/apiFuntions";
+import { useLandingPage } from "../../hooks/useLandingPage";
 
 // ✅ Yup validation schema
 const schema = yup.object().shape({
@@ -24,8 +28,10 @@ export default function NewRetroSection() {
   const [showForm, setShowForm] = useState(false);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { post } = ApiFunction();
+  const { getRetro } = useLandingPage();
 
-  // ✅ react-hook-form setup
   const {
     handleSubmit,
     control,
@@ -39,15 +45,10 @@ export default function NewRetroSection() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:9000/api";
-        const response = await axios.get(`${baseUrl}/${retroApi.get}`);
-        if (
-          response.data.success &&
-          response.data.data &&
-          response.data.data.content
-        ) {
-          setContent(response.data.data.content);
+        const retroContent = await getRetro();
+
+        if (retroContent) {
+          setContent(retroContent);
         }
       } catch (error) {
         console.error("Error fetching retro content:", error);
@@ -59,11 +60,37 @@ export default function NewRetroSection() {
     fetchContent();
   }, []);
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    alert("🎉 Successfully joined The Butterfly Sanctuary!");
-    reset();
-    setShowForm(false);
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    try {
+      // Send message to support backend
+      const payload = {
+        firstName: data.name,
+        lastName: "Retro Signup",
+        email: data.email,
+        phone: data.phone,
+        message: "User signed up via The Butterfly Sanctuary form.",
+      };
+      const response = await post(supportApi.create, payload);
+
+      if (response && response.success) {
+        addToast({
+          title: "Success",
+          description: "Successfully joined The Butterfly Sanctuary!",
+          color: "success",
+        });
+        reset();
+        setShowForm(false);
+      }
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: "Failed to join. Please try again.",
+        color: "danger",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!loading && content) {
@@ -71,14 +98,14 @@ export default function NewRetroSection() {
       <section className="relative bg-white pt-20 md:pt-28 overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="retro-content"
             dangerouslySetInnerHTML={{ __html: content }}
+            className="retro-content"
+            initial={{ opacity: 0, y: 30 }}
+            viewport={{ once: true }}
+            whileInView={{ opacity: 1, y: 0 }}
           />
         </div>
-        <style jsx global>{`
+        <style global jsx>{`
           .retro-content h1 {
             font-size: 2.25rem;
             font-weight: 800;
@@ -279,10 +306,19 @@ export default function NewRetroSection() {
 
             {/* Submit Button */}
             <button
-              className="w-full bg-primary text-white py-2 rounded-lg mt-4 hover:bg-primary/90 transition-all"
+              className={`w-full text-white py-2 rounded-lg mt-4 transition-all flex items-center justify-center gap-2 ${
+                isSubmitting
+                  ? "bg-primary/70 cursor-not-allowed"
+                  : "bg-primary hover:bg-primary/90"
+              }`}
+              disabled={isSubmitting}
               type="submit"
             >
-              Start My Wellness Journey
+              {isSubmitting ? (
+                <Spinner color="white" size="sm" />
+              ) : (
+                "Start My Wellness Journey"
+              )}
             </button>
           </motion.form>
         )}

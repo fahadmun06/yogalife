@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import axios from "axios";
+
+import ApiFunction from "./api/apiFuntions";
 import { newsletterApi } from "./api/ApiRoutesFile";
 
 export default function Newsletter() {
@@ -16,14 +17,15 @@ export default function Newsletter() {
     placeholder: "Enter Your Email",
   });
 
+  const { get } = ApiFunction();
+
   useEffect(() => {
     const fetchNewsletter = async () => {
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:9000/api";
-        const response = await axios.get(`${baseUrl}/${newsletterApi.get}`);
-        if (response.data.success) {
-          setData(response.data.data);
+        const response = await get(newsletterApi.get);
+
+        if (response && response.success) {
+          setData(response.data);
         }
       } catch (error) {
         console.error("Error fetching newsletter:", error);
@@ -133,4 +135,3 @@ export default function Newsletter() {
     </section>
   );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
+
 import ApiFunction from "../components/api/apiFuntions";
 import {
   serviceApi,
@@ -37,12 +38,17 @@ export const useLandingPage = () => {
   const fetchData = async (apiPath, action, sectionKey, nestedKey = null) => {
     try {
       const res = await get(apiPath);
-      if (res.success && res.data) {
+      // console.log("res", res);
+
+      if (res && res.success) {
+        const payload = res.data || (nestedKey ? [] : {});
+
         if (nestedKey) {
-          dispatch(action({ [nestedKey]: res.data }));
+          dispatch(action({ [nestedKey]: payload }));
         } else {
-          dispatch(action(res.data));
+          dispatch(action(payload));
         }
+
         return res.data;
       }
     } catch (err) {
@@ -52,21 +58,25 @@ export const useLandingPage = () => {
 
   const getHero = async () => {
     if (landingData.hero) return landingData.hero;
+
     return await fetchData("/banner?type=free", setHeroData, "hero");
   };
 
   const getServices = async () => {
     if (landingData.services) return landingData.services;
+
     return await fetchData(serviceApi.get, setServicesData, "services");
   };
 
   const getAbout = async () => {
     if (landingData.about) return landingData.about;
+
     return await fetchData(aboutApi.get, setAboutData, "about");
   };
 
   const getWhyChooseUs = async () => {
     if (landingData.whyChooseUs) return landingData.whyChooseUs;
+
     return await fetchData(
       whyChooseUsApi.get,
       setWhyChooseUsData,
@@ -76,11 +86,13 @@ export const useLandingPage = () => {
 
   const getButterfly = async () => {
     if (landingData.butterfly) return landingData.butterfly;
+
     return await fetchData(butterflyApi.get, setButterflyData, "butterfly");
   };
 
   const getTestimonials = async () => {
     if (landingData.testimonials) return landingData.testimonials;
+
     return await fetchData(
       testimonialsApi.getAll,
       setTestimonialsData,
@@ -104,6 +116,7 @@ export const useLandingPage = () => {
       if (settingsRes.success) {
         dispatch(setBlogSettings(settingsRes.data));
       }
+
       return { blogs: blogsRes.data, settings: settingsRes.data };
     } catch (err) {
       console.error("Error fetching blogs:", err);
@@ -126,6 +139,7 @@ export const useLandingPage = () => {
       if (settingsRes.success) {
         dispatch(setTransformationData({ settings: settingsRes.data }));
       }
+
       return { images: imagesRes.data, settings: settingsRes.data };
     } catch (err) {
       console.error("Error fetching transformations:", err);
@@ -135,16 +149,19 @@ export const useLandingPage = () => {
   const getRetro = async () => {
     if (landingData.retro) return landingData.retro;
     const data = await fetchData(retroApi.get, setRetroData, "retro");
-    return data?.content;
+
+    return data;
   };
 
   const getContact = async () => {
     if (landingData.contact) return landingData.contact;
+
     return await fetchData(contactApi.get, setContactData, "contact");
   };
 
   const getFaqs = async () => {
     if (landingData.faqs?.length > 0) return landingData.faqs;
+
     return await fetchData(faqApi.get, setFaqData, "faqs");
   };
 

@@ -13,9 +13,8 @@ import BooksGallery from "@/components/BooksGallery";
 import SubscriptionPage from "@/components/SubscriptionPage";
 
 export const metadata = {
-  title: "Tinashaii | Take Your Yoga to the Next Level",
-  description:
-    "Join Tinashaii for premium yoga sessions, personalized nutrition plans, and transformative wellness coaching.",
+  title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+  description: "Pilates, strength training, and holistic all-in-one sanctuary.",
 };
 
 export default function Home() {
@@ -30,7 +29,7 @@ export default function Home() {
       <ContactSectionNew />
       <Testimonials isPage={false} />
       <TransformationGallery />
-      <BooksGallery />
+      {/* <BooksGallery /> */}
       <RetreatHero />
       <Blog />
     </div>

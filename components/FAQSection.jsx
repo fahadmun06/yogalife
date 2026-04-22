@@ -176,7 +176,7 @@ export default function FAQSection() {
     };
 
     loadFaqs();
-  }, [getFaqs]);
+  }, []);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -199,7 +199,7 @@ export default function FAQSection() {
             transition={{ duration: 0.5 }}
             whileInView={{ opacity: 1, y: 0 }}
           >
-            FAQ'S
+            FAQ&apos;S
           </motion.h4>
 
           <motion.h2
