@@ -3,15 +3,83 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import Newsletter from "../Newsletter";
+import ApiFunction from "@/components/api/apiFuntions";
+import { footerApi } from "@/components/api/ApiRoutesFile";
+
+const iconClassMap = {
+  Instagram: "fab fa-instagram",
+  Mail: "fas fa-envelope",
+  MessageCircle: "fab fa-whatsapp",
+  Music2: "fab fa-tiktok",
+  Facebook: "fab fa-facebook-f",
+  Twitter: "fab fa-twitter",
+  Youtube: "fab fa-youtube",
+  Linkedin: "fab fa-linkedin-in",
+};
 
 const YogasticFooter = () => {
   const [email, setEmail] = useState("");
   const pathname = usePathname();
+  const [footerData, setFooterData] = useState(null);
+  const { get } = ApiFunction();
+
+  useEffect(() => {
+    const fetchFooter = async () => {
+      try {
+        const res = await get(footerApi.get);
+        if (res && res.success) {
+          setFooterData(res.data);
+        }
+      } catch (error) {
+        console.error("Footer fetch error:", error);
+      }
+    };
+    fetchFooter();
+  }, []);
+
+  const defaults = {
+    brand: { 
+      logo: "/logo.jpg", 
+      aboutTitle: "About Us", 
+      tagline: "I can’t wait for you to join me in this sanctuary, where wellness becomes a lifestyle, not a quick fix." 
+    },
+    socialLinks: [
+      { label: "Instagram", href: "https://www.instagram.com/tinashaii_", iconName: "Instagram" },
+      { label: "TikTok", href: "https://www.tiktok.com/@tinashaiichin", iconName: "Music2" },
+      { label: "WhatsApp", href: "https://wa.me/1876480188", iconName: "MessageCircle" },
+      { label: "Email", href: "mailto:tinashaii@butterflysanctuaryja.com", iconName: "Mail" },
+    ],
+    supportLinks: [
+      { name: "Contact Us", href: "/contact" },
+      { name: "FAQ", href: "/faq" },
+    ],
+    contactInfo: { phone: "1-876-480-1887", email: "info@butterflysanctuary.com" },
+    address: { line1: "Kingston", city: "Jamaica", country: "" },
+  };
+
+  const data = {
+    brand: {
+      logo: footerData?.brand?.logo || defaults.brand.logo,
+      aboutTitle: footerData?.brand?.aboutTitle || defaults.brand.aboutTitle,
+      tagline: footerData?.brand?.tagline || defaults.brand.tagline,
+    },
+    contactInfo: {
+      phone: footerData?.contactInfo?.phone || defaults.contactInfo.phone,
+      email: footerData?.contactInfo?.email || defaults.contactInfo.email,
+    },
+    address: {
+      line1: footerData?.address?.line1 || defaults.address.line1,
+      city: footerData?.address?.city || defaults.address.city,
+      country: footerData?.address?.country || defaults.address.country,
+    },
+    socialLinks: footerData?.socialLinks?.length > 0 ? footerData.socialLinks : defaults.socialLinks,
+    supportLinks: footerData?.supportLinks?.length > 0 ? footerData.supportLinks : defaults.supportLinks,
+  };
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -41,100 +109,65 @@ const YogasticFooter = () => {
           <div className="footer-grid">
             {/* Logo Column */}
             <div className="footer-col">
-              <a className="footer-logo" href="#">
+              <Link className="footer-logo" href="/">
                 <img
-                  alt="Tinashaii Logo"
-                  className="w-22 rounded-full"
-                  src="/logo.jpg"
+                  alt="Business Logo"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white/10 shadow-lg"
+                  src={data.brand.logo}
                 />
-              </a>
+              </Link>
             </div>
 
             {/* About Us Column */}
             <div className="footer-col">
-              <h3 className="footer-heading">About Us</h3>
-              <div className="footer-text">
-                I can’t wait for you to join me in this sanctuary, where
-                wellness becomes a lifestyle, not a quick fix.
+              <h3 className="footer-heading font-playfair">{data.brand.aboutTitle}</h3>
+              <div className="footer-text leading-relaxed">
+                {data.brand.tagline}
               </div>
               <div className="social-icons">
-                <Link
-                  className="social-icon"
-                  href="https://www.instagram.com/tinashaii_?igsh=c3A5aGVpc2I4cWFp&utm_source=qr"
-                  target="_blank"
-                >
-                  <i className="fab fa-instagram" />
-                </Link>
-                <Link
-                  className="social-icon"
-                  href="https://www.tiktok.com/@tinashaiichin?_t=ZM-8zVjkr9WH8K&_r=1"
-                  target="_blank"
-                >
-                  <i className="fab fa-tiktok" />
-                </Link>
-                <Link
-                  className="social-icon"
-                  href="https://wa.me/1876480188"
-                  target="_blank"
-                >
-                  <i className="fab fa-whatsapp" />
-                </Link>
-                <Link
-                  className="social-icon"
-                  href="mailto:tinashaii@butterflysanctuaryja.com"
-                  target="_blank"
-                >
-                  <i className="fas fa-envelope" />
-                </Link>
+                {data.socialLinks.map((social, index) => (
+                  <Link
+                    key={index}
+                    className="social-icon"
+                    href={social.href}
+                    target="_blank"
+                  >
+                    <i className={iconClassMap[social.iconName] || "fas fa-link"} />
+                  </Link>
+                ))}
               </div>
             </div>
 
             {/* Support Column */}
             <div className="footer-col">
-              <h3 className="footer-heading">Support</h3>
+              <h3 className="footer-heading font-playfair">Support</h3>
               <ul className="footer-links">
-                <li>
-                  <Link href={pathname?.startsWith("/") ? "/contact" : "#"}>
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href={pathname?.startsWith("/") ? "/faq" : "#"}>
-                    FAQ
-                  </Link>
-                </li>
-                {/* <li>
-                  <Link href="#">Terms & Conditions</Link>
-                </li>
-                <li>
-                  <Link href="#">Cookies & Privacy Policy</Link>
-                </li>
-                <li>
-                  <Link href="#">Refunds & Returns Policy</Link>
-                </li> */}
+                {data.supportLinks.map((link, index) => (
+                  <li key={index}>
+                    <Link href={link.href}>
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
             {/* Contact Info Column */}
             <div className="footer-col">
-              <h3 className="footer-heading">Contact Info</h3>
+              <h3 className="footer-heading font-playfair">Contact Info</h3>
               <ul className="contact-info">
-                {/* <li className="contact-item">
+                <li className="contact-item">
                   <i className="fas fa-phone-alt" />
-                  <span>1-876-480-1887</span>
-                </li> */}
+                  <span>{data.contactInfo.phone}</span>
+                </li>
                 <li className="contact-item">
                   <i className="fas fa-envelope" />
-                  <span>info@butterflysanctuary.com</span>
+                  <span>{data.contactInfo.email}</span>
                 </li>
                 <li className="contact-item">
                   <i className="fas fa-map-marker-alt" />
-                  <span>Kingston, Jamaica</span>
+                  <span>{data.address.line1}, {data.address.city} {data.address.country}</span>
                 </li>
-                {/* <li className="contact-item">
-                  <i className="fas fa-map-marker-alt" />
-                  <span>37 Bellevue drive, Kingston, Jamaica</span>
-                </li> */}
               </ul>
             </div>
           </div>
@@ -150,86 +183,6 @@ const YogasticFooter = () => {
           max-width: 1200px;
           margin: 0 auto;
           padding: 0 15px;
-        }
-
-        /* Newsletter Section */
-        .newsletter-section {
-          background: linear-gradient(135deg, #f4f1ec 0%, #ede7dc 100%);
-          padding: 80px 0 100px;
-          position: relative;
-          animation: fadeInUp 0.6s ease-out;
-        }
-
-        .newsletter-inner {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          align-items: center;
-        }
-
-        .newsletter-content {
-          padding-right: 40px;
-        }
-
-        .subscribe-tag {
-          color: #8b5a8b;
-          font-size: 14px;
-          font-weight: 600;
-          letter-spacing: 2px;
-          margin-bottom: 20px;
-          text-transform: uppercase;
-        }
-
-        .newsletter-title {
-          font-size: 42px;
-          font-weight: 700;
-          color: #333;
-          line-height: 1.3;
-          margin-bottom: 40px;
-          font-family: "Georgia", serif;
-        }
-
-        .subscribe-form {
-          display: flex;
-          gap: 0;
-          max-width: 500px;
-        }
-
-        .email-input {
-          flex: 1;
-          padding: 18px 25px;
-          border: none;
-          border-radius: 50px 0 0 50px;
-          background: white;
-          font-size: 16px;
-          outline: none;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .email-input::placeholder {
-          color: #999;
-        }
-
-        .subscribe-btn {
-          padding: 18px 35px;
-          background: #8b5a8b;
-          color: white;
-          border: none;
-          border-radius: 0 50px 50px 0;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .subscribe-btn:hover {
-          background: #7d4e7d;
-          transform: translateY(-2px);
-        }
-
-        .newsletter-image-col {
-          position: relative;
         }
 
         /* Footer Section */
@@ -266,14 +219,8 @@ const YogasticFooter = () => {
           display: inline-block;
         }
 
-        .logo-img {
-          width: 125px;
-          height: 104px;
-          object-fit: contain;
-        }
-
         .footer-heading {
-          font-size: 20px;
+          font-size: 24px;
           font-weight: 600;
           margin-bottom: 25px;
           color: #f0e6d8;
@@ -357,30 +304,8 @@ const YogasticFooter = () => {
           min-width: 16px;
         }
 
-        /* Animation */
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         /* Responsive Design */
         @media (max-width: 1024px) {
-          .newsletter-inner {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 30px;
-          }
-
-          .newsletter-content {
-            padding-right: 0;
-          }
-
           .footer-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 40px;
@@ -392,25 +317,6 @@ const YogasticFooter = () => {
         }
 
         @media (max-width: 768px) {
-          .newsletter-section {
-            padding: 60px 0 80px;
-          }
-
-          .newsletter-title {
-            font-size: 32px;
-          }
-
-          .subscribe-form {
-            flex-direction: column;
-            gap: 15px;
-            max-width: 100%;
-          }
-
-          .email-input,
-          .subscribe-btn {
-            border-radius: 50px;
-          }
-
           .footer-section {
             padding: 60px 0 30px;
           }
@@ -423,16 +329,6 @@ const YogasticFooter = () => {
 
           .social-icons {
             justify-content: center;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .newsletter-title {
-            font-size: 28px;
-          }
-
-          .container {
-            padding: 0 20px;
           }
         }
       `}</style>

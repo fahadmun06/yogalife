@@ -104,6 +104,11 @@ const supportApi = {
   updateStatus: (id) => `support/${id}`,
 };
 
+const footerApi = {
+  get: "footer",
+  update: "footer",
+};
+
 export {
   refreshTokenApi,
   packageApi,
@@ -123,6 +128,7 @@ export {
   contactApi,
   faqApi,
   supportApi,
+  footerApi,
 };
 
 

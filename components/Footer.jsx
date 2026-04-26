@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Instagram,
   Mail,
@@ -9,93 +9,140 @@ import {
   Music2,
   Phone,
   MapPin,
+  Facebook,
+  Twitter,
+  Youtube,
+  Linkedin,
 } from "lucide-react";
+import ApiFunction from "@/components/api/apiFuntions";
+import { footerApi } from "@/components/api/ApiRoutesFile";
+
+const iconMap = {
+  Instagram: Instagram,
+  Mail: Mail,
+  MessageCircle: MessageCircle,
+  Music2: Music2,
+  Facebook: Facebook,
+  Twitter: Twitter,
+  Youtube: Youtube,
+  Linkedin: Linkedin,
+};
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
+  const [footerData, setFooterData] = useState(null);
+  const { get } = ApiFunction();
 
-  const handleSubmit = () => {
-    console.log("Newsletter subscription:", email);
-    setEmail("");
+  useEffect(() => {
+    const fetchFooter = async () => {
+      try {
+        const res = await get(footerApi.get);
+        if (res && res.success) {
+          setFooterData(res.data);
+        }
+      } catch (error) {
+        console.error("Footer fetch error:", error);
+      }
+    };
+    fetchFooter();
+  }, []);
+
+  // Merge database data with defaults to ensure no empty fields
+  const defaults = {
+    brand: { 
+      logo: "/logo.jpg", 
+      aboutTitle: "About Us", 
+      tagline: "Wellness, guidance, and support for your healing journey." 
+    },
+    socialLinks: [
+      { label: "Instagram", href: "https://www.instagram.com/tinashaii_", iconName: "Instagram" },
+      { label: "TikTok", href: "https://www.tiktok.com/@tinashaiichin", iconName: "Music2" },
+      { label: "WhatsApp", href: "https://wa.me/1876480188", iconName: "MessageCircle" },
+      { label: "Email", href: "mailto:tinashaii@butterflysanctuaryja.com", iconName: "Mail" },
+    ],
+    supportLinks: [
+      { name: "Contact Us", href: "/contact" },
+      { name: "FAQ", href: "/faq" },
+    ],
+    contactInfo: { phone: "1-876-480-1887", email: "tinashaii@butterflysanctuaryja.com" },
+    address: { line1: "37 Bellevue drive, Kingston, Jamaica", city: "", country: "" },
   };
 
-  const socialLinks = [
-    {
-      icon: <Instagram size={18} />,
-      href: "https://www.instagram.com/tinashaii_?igsh=c3A5aGVpc2I4cWFp&utm_source=qr",
-      label: "Instagram",
+  const data = {
+    brand: {
+      logo: footerData?.brand?.logo || defaults.brand.logo,
+      aboutTitle: footerData?.brand?.aboutTitle || defaults.brand.aboutTitle,
+      tagline: footerData?.brand?.tagline || defaults.brand.tagline,
     },
-    {
-      icon: <Music2 size={18} />,
-      href: "https://www.tiktok.com/@tinashaiichin?_t=ZM-8zVjkr9WH8K&_r=1",
-      label: "TikTok",
+    contactInfo: {
+      phone: footerData?.contactInfo?.phone || defaults.contactInfo.phone,
+      email: footerData?.contactInfo?.email || defaults.contactInfo.email,
     },
-    {
-      icon: <MessageCircle size={18} />,
-      href: "https://wa.me/1876480188",
-      label: "WhatsApp",
+    address: {
+      line1: footerData?.address?.line1 || defaults.address.line1,
+      city: footerData?.address?.city || defaults.address.city,
+      country: footerData?.address?.country || defaults.address.country,
     },
-    {
-      icon: <Mail size={18} />,
-      href: "mailto:tinashaii@butterflysanctuaryja.com",
-      label: "Email",
-    },
-  ];
-
-  const supportLinks = [
-    { name: "Contact Us", href: "/contact" },
-    { name: "FAQ", href: "/faq" },
-    { name: "Terms & Conditions", href: "#" },
-    { name: "Cookies & Privacy Policy", href: "#" },
-    { name: "Refunds & Returns Policy", href: "#" },
-  ];
+    socialLinks: footerData?.socialLinks?.length > 0 ? footerData.socialLinks : defaults.socialLinks,
+    supportLinks: footerData?.supportLinks?.length > 0 ? footerData.supportLinks : defaults.supportLinks,
+  };
 
   return (
     <footer className="bg-gradient-to-br from-purple-950 via-purple-900 to-purple-800 text-white dark:from-black dark:via-black dark:to-black">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-        {/* Brand */}
+        {/* Logo & About Section */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Flower2
-              className="text-purple-300 dark:text-purple-400"
-              size={28}
-            />
-            <h2 className="text-2xl font-bold text-purple-200 dark:text-white">
-              Tinashaii
-            </h2>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 shadow-xl bg-white/10 backdrop-blur-sm">
+              <img 
+                src={data.brand.logo} 
+                alt="Business Logo" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                {data.brand.aboutTitle}
+              </h2>
+            </div>
           </div>
-          <p className="text-purple-200/80 dark:text-gray-400 text-sm leading-relaxed mb-6">
-            Wellness, guidance, and support for your healing journey.
+          
+          <p className="text-purple-100/80 dark:text-gray-400 text-sm leading-relaxed mb-6 italic">
+            "{data.brand.tagline}"
           </p>
+
           <div className="flex space-x-3">
-            {socialLinks.map((social, index) => (
-              <a
-                key={index}
-                aria-label={social.label}
-                className="w-10 h-10 bg-white/10 dark:bg-white/5 rounded-full flex items-center justify-center hover:bg-purple-500 transition-all duration-300"
-                href={social.href}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {social.icon}
-              </a>
-            ))}
+            {data.socialLinks.map((social, index) => {
+              const IconComponent = iconMap[social.iconName] || Instagram;
+              return (
+                <a
+                  key={index}
+                  aria-label={social.label}
+                  className="w-10 h-10 bg-white/10 dark:bg-white/5 rounded-full flex items-center justify-center hover:bg-purple-500 transition-all duration-300 hover:scale-110 shadow-lg"
+                  href={social.href}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <IconComponent size={18} />
+                </a>
+              );
+            })}
           </div>
         </div>
 
         {/* Support */}
         <div>
-          <h3 className="text-lg font-semibold mb-4 text-purple-100 dark:text-gray-200">
+          <h3 className="text-lg font-semibold mb-6 text-purple-200 dark:text-gray-200 border-b border-white/10 pb-2 inline-block">
             Support
           </h3>
-          <ul className="space-y-3">
-            {supportLinks.map((link, index) => (
+          <ul className="space-y-4">
+            {data.supportLinks.map((link, index) => (
               <li key={index}>
                 <a
-                  className="text-purple-200/80 dark:text-gray-400 hover:text-white transition-colors"
+                  className="text-purple-200/80 dark:text-gray-400 hover:text-white transition-colors flex items-center gap-2 group"
                   href={link.href}
                 >
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full group-hover:scale-150 transition-transform" />
                   {link.name}
                 </a>
               </li>
@@ -105,26 +152,30 @@ export default function Footer() {
 
         {/* Contact Info */}
         <div>
-          <h3 className="text-lg font-semibold mb-4 text-purple-100 dark:text-gray-200">
+          <h3 className="text-lg font-semibold mb-6 text-purple-200 dark:text-gray-200 border-b border-white/10 pb-2 inline-block">
             Contact Info
           </h3>
-          <ul className="space-y-3 text-purple-200/80 dark:text-gray-400">
-            <li className="flex items-center gap-2">
-              <Phone className="opacity-80" size={16} />
+          <ul className="space-y-5 text-purple-200/80 dark:text-gray-400">
+            <li className="flex items-center gap-3 group">
+              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                <Phone className="opacity-80" size={16} />
+              </div>
               <a
-                className="hover:text-white transition-colors"
-                href="tel:+18764801887"
+                className="hover:text-white transition-colors font-medium"
+                href={`tel:${data.contactInfo.phone}`}
               >
-                1-876-480-1887
+                {data.contactInfo.phone}
               </a>
             </li>
-            <li className="flex items-center gap-2">
-              <Mail className="opacity-80" size={16} />
+            <li className="flex items-center gap-3 group">
+              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                <Mail className="opacity-80" size={16} />
+              </div>
               <a
-                className="hover:text-white transition-colors"
-                href="mailto:tinashaii@butterflysanctuaryja.com"
+                className="hover:text-white transition-colors font-medium break-all"
+                href={`mailto:${data.contactInfo.email}`}
               >
-                tinashaii@butterflysanctuaryja.com
+                {data.contactInfo.email}
               </a>
             </li>
           </ul>
@@ -132,39 +183,29 @@ export default function Footer() {
 
         {/* Organization Address */}
         <div>
-          <h3 className="text-lg font-semibold mb-4 text-purple-100 dark:text-gray-200">
+          <h3 className="text-lg font-semibold mb-6 text-purple-200 dark:text-gray-200 border-b border-white/10 pb-2 inline-block">
             Organization Address
           </h3>
-          <div className="space-y-2 text-purple-200/80 dark:text-gray-400">
-            <div className="flex items-start gap-2">
-              <MapPin className="mt-0.5 opacity-80" size={16} />
-              <div>
-                <p>37 Bellevue drive</p>
-                <p>Kingston</p>
-                <p>Jamaica</p>
+          <div className="space-y-4 text-purple-200/80 dark:text-gray-400">
+            <div className="flex items-start gap-3 group">
+              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-purple-500 transition-colors shrink-0">
+                <MapPin className="opacity-80" size={16} />
               </div>
+              <div className="leading-relaxed">
+                <p>{data.address.line1}</p>
+                <p>{data.address.city} {data.address.country}</p>
+              </div>
+            </div>
+            <div className="pt-4 mt-4 border-t border-white/10 italic text-xs text-purple-300/60">
+              Join the waitlist for our next retreat
             </div>
           </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-purple-700/40 dark:border-gray-700/40" />
-
       {/* Bottom */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center text-sm text-purple-300 dark:text-gray-400">
-        <p>© 2025 Tinashaii. All rights reserved.</p>
-        <div className="flex gap-4 mt-4 md:mt-0">
-          <a className="hover:text-white" href="#">
-            Privacy Policy
-          </a>
-          <a className="hover:text-white" href="#">
-            Terms
-          </a>
-          <a className="hover:text-white" href="#">
-            Cookies
-          </a>
-        </div>
+      <div className="border-t border-white/10 py-6 text-center text-xs text-purple-400/60 uppercase tracking-widest">
+        {data.brand.aboutTitle || "Tinashaii"} Sanctuary © {new Date().getFullYear()}
       </div>
     </footer>
   );

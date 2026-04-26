@@ -351,7 +351,7 @@ export default function SubscriptionPage() {
                 <p className="text-zinc-500 max-w-md text-lg">
                   {user?.subscriptionStatus === "canceled" && lastPackage
                     ? `You canceled your ${lastPackage.name} plan, but still have ${user.subscription.trial.remainingDays} days of Free Trial remaining. Continue your subscription to keep your benefits seamlessly when the trial ends!`
-                    : "You are currently exploring KostKord on a Free Trial."}
+                    : "You are currently exploring Tina on a Free Trial."}
                 </p>
                 <div className="flex flex-col gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400">
                   <p>
