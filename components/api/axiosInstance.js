@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import { decryptData } from "./encrypted";
 
 export const axiosInstance = axios.create({
-  baseURL: "https://tina-backend-production-c911.up.railway.app/api/",
+  baseURL: "https://tina-backend-production-f218.up.railway.app/api/",
   // baseURL: "http://localhost:9000/api/",
 });
 
