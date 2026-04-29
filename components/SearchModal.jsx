@@ -431,7 +431,7 @@ export default function SearchModal({ isOpen, onClose }) {
                                 <HighlightMatch
                                   match={query}
                                   text={
-                                    item.description || "Tina Wellness Content"
+                                    item.description || "Sanctuary Wellness Content"
                                   }
                                 />
                               )}
@@ -489,7 +489,7 @@ export default function SearchModal({ isOpen, onClose }) {
             </span>
           </div>
           <div className="text-[10px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 font-poppins">
-            Tina Wellness
+            Sanctuary Wellness
           </div>
         </div>
       </ModalContent>

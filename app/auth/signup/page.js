@@ -2,7 +2,7 @@ import React from "react";
 import SignupPage from "../../../components/authPages/SignupPage";
 
 export const metadata = {
-  title: "Signup | Tinashaii",
+  title: "Signup | Butterfly Sanctuary",
   description:
     "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
 };

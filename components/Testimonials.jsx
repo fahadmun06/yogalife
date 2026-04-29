@@ -21,7 +21,7 @@ const staticTestimonials = [
     rating: 5,
   },
   {
-    text: "Professional, caring, and life-changing! Tina's program helped me transform my mind and body—highly recommend!",
+    text: "Professional, caring, and life-changing! The sanctuary program helped me transform my mind and body—highly recommend!",
     rating: 5,
   },
 ];

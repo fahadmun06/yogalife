@@ -258,8 +258,9 @@ export default function PremiumLandingPage() {
       {/* Hero Section */}
       <PremiumHero />
 
-      {user?.subscriptionStatus !== "free" &&
-        user?.subscriptionStatus !== "active" && (
+      {["free", "expired", "cancel", "canceled"].includes(
+        user?.subscriptionStatus,
+      ) && (
           <div className="container mx-auto px-4 md:px-8 lg:px-16 mt-8">
             <div className="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-2xl shadow-sm flex items-center gap-4">
               <div className="bg-orange-100 p-2 rounded-full">
@@ -291,8 +292,9 @@ export default function PremiumLandingPage() {
       {/* Tabs Section */}
       <div
         className={`container mx-auto px-4 md:px-8 lg:px-16 pb-24 ${
-          user?.subscriptionStatus !== "free" &&
-          user?.subscriptionStatus !== "active"
+          ["free", "expired", "cancel", "canceled"].includes(
+            user?.subscriptionStatus,
+          )
             ? "hidden"
             : ""
         }`}

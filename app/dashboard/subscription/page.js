@@ -271,13 +271,38 @@ export default function SubscriptionPage() {
         </p>
       </div>
 
+      {["expired", "cancel", "canceled"].includes(user?.subscriptionStatus) && (
+        <div className="mb-6">
+          <div className="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-2xl shadow-sm flex items-center gap-4">
+            <div className="bg-orange-100 p-2 rounded-full">
+              <AlertCircle className="text-orange-600" size={24} />
+            </div>
+            <div>
+              <h4 className="text-orange-800 font-bold text-lg mb-0.5">
+                Subscription Inactive
+              </h4>
+              <p className="text-orange-700 text-sm md:text-base">
+                Your premium access is currently{" "}
+                <span className="font-bold uppercase underline underline-offset-4 decoration-orange-300">
+                  {user?.subscriptionStatus}
+                </span>
+                . Please select a plan below to renew your subscription and
+                unlock workouts, nutrition plans, and coaching.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Plan Card */}
       <Card className="border-none shadow-premium bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden">
         <CardBody className="p-8 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1 space-y-3 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-3">
               <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
-                {activePackage ? activePackage.name : "Free Trial"}
+                {activePackage
+                  ? activePackage.name
+                  : user?.subscription?.billing?.planId?.name || "Free Trial"}
               </h2>
               <Chip
                 color={
@@ -328,19 +353,33 @@ export default function SubscriptionPage() {
                     <>
                       <p>
                         Start Date:{" "}
-                        {user?.subscription?.billing?.startDate
-                          ? new Date(
-                              user.subscription.billing.startDate,
-                            ).toLocaleDateString()
-                          : "N/A"}
+                        {user?.subscriptionStatus === "trialing"
+                          ? user?.subscription?.trial?.startDate
+                            ? new Date(
+                                user.subscription.trial.startDate,
+                              ).toLocaleDateString()
+                            : "N/A"
+                          : user?.subscription?.billing?.startDate
+                            ? new Date(
+                                user.subscription.billing.startDate,
+                              ).toLocaleDateString()
+                            : "N/A"}
                       </p>
                       <p>
-                        Next Billing:{" "}
-                        {user?.subscription?.billing?.nextPaymentDate
-                          ? new Date(
-                              user.subscription.billing.nextPaymentDate,
-                            ).toLocaleDateString()
-                          : "N/A"}
+                        {user?.subscriptionStatus === "trialing"
+                          ? "Trial Ends:"
+                          : "Next Billing:"}{" "}
+                        {user?.subscriptionStatus === "trialing"
+                          ? user?.subscription?.trial?.endDate
+                            ? new Date(
+                                user.subscription.trial.endDate,
+                              ).toLocaleDateString()
+                            : "N/A"
+                          : user?.subscription?.billing?.nextPaymentDate
+                            ? new Date(
+                                user.subscription.billing.nextPaymentDate,
+                              ).toLocaleDateString()
+                            : "N/A"}
                       </p>
                     </>
                   )}
@@ -351,7 +390,7 @@ export default function SubscriptionPage() {
                 <p className="text-zinc-500 max-w-md text-lg">
                   {user?.subscriptionStatus === "canceled" && lastPackage
                     ? `You canceled your ${lastPackage.name} plan, but still have ${user.subscription.trial.remainingDays} days of Free Trial remaining. Continue your subscription to keep your benefits seamlessly when the trial ends!`
-                    : "You are currently exploring Tina on a Free Trial."}
+                    : "You are currently exploring the Butterfly Sanctuary on a Free Trial."}
                 </p>
                 <div className="flex flex-col gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400">
                   <p>
@@ -425,8 +464,9 @@ export default function SubscriptionPage() {
                 const isCurrent = pkg._id === planIdStr;
                 const isExpired =
                   isCurrent &&
-                  (user?.subscriptionStatus === "expired" ||
-                    user?.subscriptionStatus === "canceled");
+                  ["expired", "cancel", "canceled"].includes(
+                    user?.subscriptionStatus,
+                  );
 
                 return (
                   <div

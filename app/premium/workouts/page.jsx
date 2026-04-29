@@ -107,8 +107,9 @@ export default function WorkoutsPage() {
           </div>
         </div>
 
-        {user?.subscriptionStatus !== "free" &&
-          user?.subscriptionStatus !== "active" && (
+        {["free", "expired", "cancel", "canceled"].includes(
+          user?.subscriptionStatus,
+        ) && (
             <div className="mb-10">
               <div className="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-2xl shadow-sm flex items-center gap-4">
                 <div className="bg-orange-100 p-2 rounded-full">
@@ -137,7 +138,9 @@ export default function WorkoutsPage() {
             </div>
           )}
 
-        {user?.subscriptionStatus === "active" &&
+        {!["free", "expired", "cancel", "canceled"].includes(
+          user?.subscriptionStatus,
+        ) &&
           (loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
               {[...Array(8)].map((_, i) => (
@@ -164,7 +167,8 @@ export default function WorkoutsPage() {
                     No workouts found
                   </h3>
                   <p className="text-gray-500 max-w-sm text-center">
-                    We couldn&apos;t find any workouts matching your criteria. Try adjusting your filters.
+                    We couldn&apos;t find any workouts matching your criteria.
+                    Try adjusting your filters.
                   </p>
                   {(searchQuery || categoryId) && (
                     <Button

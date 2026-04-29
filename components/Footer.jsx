@@ -50,20 +50,22 @@ export default function Footer() {
   const defaults = {
     brand: { 
       logo: "/logo.jpg", 
-      aboutTitle: "About Us", 
-      tagline: "Wellness, guidance, and support for your healing journey." 
+      aboutTitle: "Butterfly Sanctuary", 
+      tagline: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching" 
     },
     socialLinks: [
-      { label: "Instagram", href: "https://www.instagram.com/tinashaii_", iconName: "Instagram" },
-      { label: "TikTok", href: "https://www.tiktok.com/@tinashaiichin", iconName: "Music2" },
+      { label: "Instagram", href: "https://www.instagram.com/", iconName: "Instagram" },
+      { label: "TikTok", href: "https://www.tiktok.com/", iconName: "Music2" },
       { label: "WhatsApp", href: "https://wa.me/1876480188", iconName: "MessageCircle" },
-      { label: "Email", href: "mailto:tinashaii@butterflysanctuaryja.com", iconName: "Mail" },
+      { label: "Email", href: "mailto:support@butterflysanctuaryja.com", iconName: "Mail" },
     ],
     supportLinks: [
       { name: "Contact Us", href: "/contact" },
       { name: "FAQ", href: "/faq" },
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
     ],
-    contactInfo: { phone: "1-876-480-1887", email: "tinashaii@butterflysanctuaryja.com" },
+    contactInfo: { phone: "1-876-480-1887", email: "support@butterflysanctuaryja.com" },
     address: { line1: "37 Bellevue drive, Kingston, Jamaica", city: "", country: "" },
   };
 
@@ -205,7 +207,7 @@ export default function Footer() {
 
       {/* Bottom */}
       <div className="border-t border-white/10 py-6 text-center text-xs text-purple-400/60 uppercase tracking-widest">
-        {data.brand.aboutTitle || "Tinashaii"} Sanctuary © {new Date().getFullYear()}
+        {data.brand.aboutTitle || "Butterfly Sanctuary"} Sanctuary © {new Date().getFullYear()}
       </div>
     </footer>
   );

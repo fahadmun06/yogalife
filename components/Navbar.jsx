@@ -133,7 +133,7 @@ export default function Navbar() {
         >
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link className="flex-shrink-0" href="/">
+            <Link className="flex-shrink-0" href={isPremium ? "/premium" : "/"}>
               <img
                 alt="Logo"
                 className="w-14 cursor-pointer rounded-full"

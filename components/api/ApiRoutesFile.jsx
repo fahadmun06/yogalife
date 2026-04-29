@@ -109,6 +109,10 @@ const footerApi = {
   update: "footer",
 };
 
+const policyApi = {
+  get: (type) => `policies/${type}`,
+};
+
 export {
   refreshTokenApi,
   packageApi,
@@ -129,6 +133,7 @@ export {
   faqApi,
   supportApi,
   footerApi,
+  policyApi,
 };
 
 

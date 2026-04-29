@@ -45,20 +45,20 @@ const YogasticFooter = () => {
   const defaults = {
     brand: { 
       logo: "/logo.jpg", 
-      aboutTitle: "About Us", 
-      tagline: "I can’t wait for you to join me in this sanctuary, where wellness becomes a lifestyle, not a quick fix." 
+      aboutTitle: "Butterfly Sanctuary", 
+      tagline: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching" 
     },
     socialLinks: [
-      { label: "Instagram", href: "https://www.instagram.com/tinashaii_", iconName: "Instagram" },
-      { label: "TikTok", href: "https://www.tiktok.com/@tinashaiichin", iconName: "Music2" },
+      { label: "Instagram", href: "https://www.instagram.com/", iconName: "Instagram" },
+      { label: "TikTok", href: "https://www.tiktok.com/", iconName: "Music2" },
       { label: "WhatsApp", href: "https://wa.me/1876480188", iconName: "MessageCircle" },
-      { label: "Email", href: "mailto:tinashaii@butterflysanctuaryja.com", iconName: "Mail" },
+      { label: "Email", href: "mailto:support@butterflysanctuaryja.com", iconName: "Mail" },
     ],
     supportLinks: [
       { name: "Contact Us", href: "/contact" },
       { name: "FAQ", href: "/faq" },
     ],
-    contactInfo: { phone: "1-876-480-1887", email: "info@butterflysanctuary.com" },
+    contactInfo: { phone: "1-876-480-1887", email: "support@butterflysanctuaryja.com" },
     address: { line1: "Kingston", city: "Jamaica", country: "" },
   };
 

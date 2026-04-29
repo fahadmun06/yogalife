@@ -64,7 +64,7 @@ export default function PremiumHero() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <img
-              alt="Tinashaii Logo"
+              alt="Butterfly Sanctuary Logo"
               className="rounded-2xl w-full max-w-[320px] sm:max-w-[420px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain object-left"
               src="/premium-hero.png"
               style={{

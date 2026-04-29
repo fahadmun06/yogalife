@@ -18,7 +18,7 @@ export default function page() {
 }
 
 export const metadata = {
-  title: "Books | Tinashaii",
+  title: "Books | Butterfly Sanctuary",
   description:
     "Take Your Yoga to the Next Level - Learn about our mission, vision, and yoga services",
 };

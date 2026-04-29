@@ -13,8 +13,8 @@ import BooksGallery from "@/components/BooksGallery";
 import SubscriptionPage from "@/components/SubscriptionPage";
 
 export const metadata = {
-  title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
-  description: "Pilates, strength training, and holistic all-in-one sanctuary.",
+  title: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching",
+  description: "The Butterfly Sanctuary Holistic Health is a holistic wellness platform founded by a Jamaican Certified Holistic Practitioner, focused on Pilates-based strength, mobility, and holistic wellness.",
 };
 
 export default function Home() {

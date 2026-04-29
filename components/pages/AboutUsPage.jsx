@@ -47,9 +47,9 @@ const AboutUsPage = () => {
   return (
     <>
       <Head>
-        <title>{data?.title || "About"} - TinasHaii</title>
+        <title>{data?.title || "About"} - Butterfly Sanctuary</title>
         <meta
-          content={data?.description || "Meet Tina — Certified Health Coach, Fitness & Pilates."}
+          content={data?.description || "Butterfly Sanctuary — Certified Health Coach, Fitness & Pilates."}
           name="description"
         />
       </Head>
@@ -81,7 +81,7 @@ const AboutUsPage = () => {
 
               {/* Main Image */}
               <motion.img
-                alt="Tina - Health Coach"
+                alt="Butterfly Sanctuary - Health Coach"
                 className="w-full max-w-[570px] h-auto aspect-square 
                rounded-tl-[50px] rounded-br-[50px] 
                object-cover object-bottom z-10 relative shadow-2xl"
@@ -100,7 +100,7 @@ const AboutUsPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
             >
               <h4 className="text-primary font-semibold text-sm uppercase tracking-wide">
-                {data?.tagline || "Meet Tina"}
+                {data?.tagline || "Meet the Sanctuary"}
               </h4>
               <h2 className="text-4xl font-bold text-gray-900 font-playfair leading-tight">
                 {data?.title || "Certified Health Coach • Fitness • Pilates"}
@@ -109,7 +109,7 @@ const AboutUsPage = () => {
               {/* Dynamic Content */}
               <div 
                 className="space-y-4 text-gray-600 leading-relaxed text-lg whitespace-pre-wrap"
-                dangerouslySetInnerHTML={{ __html: data?.description }}
+                dangerouslySetInnerHTML={{ __html: data?.description || "Empowering your wellness journey with holistic health, fitness, and pilates." }}
               />
             </motion.div>
           </div>

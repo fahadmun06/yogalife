@@ -31,17 +31,17 @@ export const viewport = {
 
 export const metadata = {
   title: {
-    default: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
-    template: "%s | Tina Shay",
+    default: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching",
+    template: "%s | Butterfly Sanctuary",
   },
-  description: "Pilates, strength training, and holistic all-in-one sanctuary.",
+  description: "Transform your health with The Butterfly Sanctuary. Access on demand Pilates workouts, strength Training, holistic health coaching, wellness retreats and personalized support designed to help you understand your health from inside out.",
   metadataBase: new URL("https://www.butterflysanctuaryja.com"),
   alternates: {
     canonical: "/",
   },
   keywords: [
-    "Tina Shay",
     "The Butterfly Sanctuary",
+    "Butterfly Sanctuary",
     "Holistic Health",
     "Pilates",
     "Strength Training",
@@ -49,11 +49,11 @@ export const metadata = {
     "Sanctuary",
   ],
   openGraph: {
-    title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+    title: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching",
     description:
-      "Pilates, strength training, and holistic all-in-one sanctuary.",
+      "Transform your health with The Butterfly Sanctuary. Access on demand Pilates workouts, strength Training, holistic health coaching, wellness retreats and personalized support designed to help you understand your health from inside out.",
     url: "https://www.butterflysanctuaryja.com",
-    siteName: "Tina Shay",
+    siteName: "Butterfly Sanctuary",
     images: [
       {
         url: "/apple-icon.png",
@@ -66,9 +66,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tina Shay | The Butterfly Sanctuary Holistic Health Platform",
+    title: "Butterfly Sanctuary Holistic Health | Pilates, Strength & Wellness Coaching",
     description:
-      "Pilates, strength training, and holistic all-in-one sanctuary.",
+      "Transform your health with The Butterfly Sanctuary. Access on demand Pilates workouts, strength Training, holistic health coaching, wellness retreats and personalized support designed to help you understand your health from inside out.",
     images: ["/apple-icon.png"],
   },
 };
@@ -81,7 +81,7 @@ export default function RootLayout({ children }) {
       lang="en"
     >
       <head>
-        <meta name="apple-mobile-web-app-title" content="Tinashaii" />
+        <meta name="apple-mobile-web-app-title" content="Butterfly Sanctuary" />
       </head>
       <body
         className={clsx(

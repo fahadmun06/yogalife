@@ -86,7 +86,7 @@ export default function AboutSectionNew() {
                 transition={{ duration: 0.6 }}
                 whileInView={{ opacity: 1, y: 0 }}
               >
-                {data?.tagline || "Meet Tina"}
+                {data?.tagline || "Meet the Sanctuary"}
               </motion.h4>
 
               <motion.h2
@@ -96,7 +96,7 @@ export default function AboutSectionNew() {
                 whileInView={{ opacity: 1, y: 0 }}
               >
                 {data?.title ||
-                  "Hi, I’m Tina Certified Health Coach, Fitness & Pilates"}
+                  "Holistic Health, Fitness & Pilates Sanctuary"}
               </motion.h2>
 
               <motion.div

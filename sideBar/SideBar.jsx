@@ -118,7 +118,7 @@ export function Sidebar() {
                 >
                   <div className="w-full flex justify-center">
                     <Image
-                      alt="Tina Logo"
+                      alt="Sanctuary Logo"
                       className="w-16 h-16 rounded-xl mx-auto  object-cover"
                       src={"/logo.jpg"}
                       width={32}

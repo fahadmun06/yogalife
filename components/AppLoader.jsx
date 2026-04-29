@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function AppLoader({
   isVisible = true,
-  message = "Loading Tinashaii...",
+  message = "Loading Butterfly Sanctuary...",
   showUserStatus = false,
   user = null,
 }) {
@@ -33,10 +33,10 @@ export default function AppLoader({
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <div className="rounded-full shadow-[inset_3px_3px_6px_#d9cddc,inset_-3px_-3px_6px_#ffffff] p-2 mb-4">
-            <Image src="/logo.jpg" className="rounded-full" alt="Tinashaii" width={60} height={60} />
+            <Image src="/logo.jpg" className="rounded-full" alt="Butterfly Sanctuary" width={60} height={60} />
           </div>
-          <h1 className="text-2xl font-bold text-[#4A3B4C] font-playfair tracking-wider">Tinashaii</h1>
-          <p className="text-[#4A3B4C]/70 text-xs font-medium uppercase tracking-[0.2em] mt-1">Yoga & Wellness</p>
+          <h1 className="text-2xl font-bold text-[#4A3B4C] font-playfair tracking-wider">Butterfly Sanctuary</h1>
+          <p className="text-[#4A3B4C]/70 text-xs font-medium uppercase tracking-[0.2em] mt-1">Holistic Health</p>
         </motion.div>
 
         {/* Loading Spinner */}
