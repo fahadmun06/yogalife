@@ -18,6 +18,7 @@ import {
   Apple,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
 import useWorkoutApi from "@/hooks/useWorkoutApi";
 import useMealApi from "@/hooks/useMealApi";
 
@@ -39,6 +40,12 @@ const staticPages = [
     path: "/premium/nutritions",
     icon: <Utensils className="w-4 h-4" />,
     category: "Nutrition",
+  },
+  {
+    title: "Books",
+    path: "/premium?tab=books",
+    icon: <Book className="w-4 h-4" />,
+    category: "Library",
   },
   {
     title: "Profile Settings",
@@ -234,6 +241,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
     // 4. Workouts
     const workoutsList = Array.isArray(workouts) ? workouts : [];
+
     workoutsList.forEach((w) =>
       results.push({
         type: "workout",
@@ -245,6 +253,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
     // 5. Meals
     const mealsList = Array.isArray(meals) ? meals : [];
+
     mealsList.forEach((m) =>
       results.push({
         type: "meal",
@@ -309,8 +318,8 @@ export default function SearchModal({ isOpen, onClose }) {
 
   return (
     <Modal
-      backdrop="blur"
       hideCloseButton
+      backdrop="blur"
       isOpen={isOpen}
       scrollBehavior="inside"
       size="2xl"

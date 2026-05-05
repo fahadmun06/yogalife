@@ -37,6 +37,159 @@ import {
 } from "@/components/api/ApiRoutesFile";
 import ApiFunction from "@/components/api/apiFuntions";
 
+function normalizeSubStatus(status) {
+  return status;
+}
+
+function getInactiveBannerBody(status) {
+  const s = normalizeSubStatus(status);
+  if (s === "expired") {
+    return "Your membership period has ended. Choose a plan below to renew and get back to your workouts, meal plans, and coaching.";
+  }
+  if (s === "canceled") {
+    return "You’ve canceled your subscription. Resubscribe below whenever you’re ready for full access again.";
+  }
+  return "Your premium access isn’t active right now. Pick a plan below to unlock workouts, nutrition content, and coaching.";
+}
+
+function getInactiveBannerLabel(status) {
+  const s = normalizeSubStatus(status);
+  if (s === "expired") return "expired";
+  if (s === "canceled") return "canceled";
+  return s.replace(/-/g, " ");
+}
+
+function getActivePackageSubtitle(activePackage, status) {
+  const s = normalizeSubStatus(status);
+  const name = activePackage?.name || "your plan";
+  if (s === "active") {
+    return `You’re an active ${name} member—enjoy full access to everything your plan includes.`;
+  }
+  if (s === "trialing") {
+    return `You’re on a trial of ${name}. Explore all included benefits; stay subscribed to keep them when the trial ends.`;
+  }
+  if (s === "paused") {
+    return `Your ${name} subscription is paused. Resume billing when you’re ready so your access stays seamless.`;
+  }
+  return `You’re set up on ${name}. Your current status is reflected in the details below.`;
+}
+
+function getTrialPeriodMessage(user, lastPackage) {
+  const status = normalizeSubStatus(user?.subscriptionStatus);
+  const days = user?.subscription?.trial?.remainingDays ?? 0;
+  const dayLabel = days === 1 ? "day" : "days";
+  const planName = lastPackage?.name;
+
+  if (status === "canceled") {
+    if (planName) {
+      return `You canceled ${planName}, but you still have ${days} ${dayLabel} of trial access. Resubscribe below so your benefits continue smoothly when that window closes.`;
+    }
+    return `Your subscription is canceled, but you still have ${days} ${dayLabel} of trial access. Choose a plan below to stay with us without interruption.`;
+  }
+  if (status === "free") {
+    return `A free account doesn’t include premium workouts, meal plans, or coaching. Start your free trial or choose a plan below to unlock full access—you can cancel anytime.`;
+  }
+  if (status === "trialing") {
+    return `You’re in your trial period with ${days} ${dayLabel} remaining. Make the most of full access; subscribe before it ends to keep your progress and perks.`;
+  }
+  if (status === "expired") {
+    return `Your paid period has ended, but you still have ${days} ${dayLabel} of trial access. Select a plan below to restore uninterrupted premium access.`;
+  }
+  if (status === "paused") {
+    return `Your membership is paused. You have ${days} ${dayLabel} of trial access left—review plans below or reach out if you need help.`;
+  }
+  if (status === "active") {
+    return `You have ${days} ${dayLabel} of trial benefits left as you get started. Your membership stays active—see dates below for billing.`;
+  }
+  return `You have ${days} ${dayLabel} left on your trial. Browse the plans below to continue with the Butterfly Sanctuary.`;
+}
+
+function getNoTrialMessage(status) {
+  const s = normalizeSubStatus(status);
+  if (s === "expired") {
+    return "Your subscription or trial has ended. Choose a plan below to get back to workouts, nutrition, and coaching.";
+  }
+  if (s === "canceled") {
+    return "Your plan is canceled. Subscribe again anytime to pick up where you left off.";
+  }
+  if (s === "paused") {
+    return "Your membership is paused. Resume or choose a plan below when you’re ready.";
+  }
+  if (s === "free") {
+    return "Premium features aren’t available on a free account. Start your free trial or subscribe to a plan below to unlock everything—you can cancel anytime.";
+  }
+  if (s === "trialing") {
+    return "Your trial has wrapped up. Pick a plan below to keep unlimited access to your sanctuary.";
+  }
+  return "Unlock the full experience—choose a plan below for pro workouts, coaching, and more.";
+}
+
+/** Label for each card in Available Plans (not the hero CTA). */
+function getAvailablePlanButtonLabel({
+  isExpired,
+  isCurrent,
+  subscriptionStatus,
+  trialIsClaimed,
+}) {
+  if (isExpired) return "Renew";
+  if (isCurrent) return "Current Plan";
+
+  const status = subscriptionStatus || "free";
+  if (status === "free" && !trialIsClaimed) return "Start Free Trial";
+  if (status === "free") return "Go Premium";
+
+  return "Upgrade";
+}
+
+function shouldStartTrialOnPlanClick({
+  isExpired,
+  isCurrent,
+  subscriptionStatus,
+  trialIsClaimed,
+}) {
+  if (isExpired || isCurrent) return false;
+  return subscriptionStatus === "free" && !trialIsClaimed;
+}
+
+function getCurrentPlanCardTitle(user, activePackage) {
+  if (activePackage?.name) return activePackage.name;
+
+  const plan = user?.subscription?.billing?.planId;
+  const billingName =
+    plan && typeof plan === "object" && plan.name ? plan.name : null;
+
+  if (billingName) return billingName;
+
+  const status = user?.subscriptionStatus || "free";
+  const trialClaimed = user?.subscription?.trial?.isClaimed;
+
+  if (status === "free") {
+    if (!trialClaimed) {
+      return "Start your sanctuary membership";
+    }
+
+    return "Go premium—your best routine is waiting";
+  }
+  return user?.subscription?.billing?.planId?.name || "Your plan";
+
+}
+
+/** Short conversion line under the title for new / free users without a matched package. */
+function getNewSubscriberTeaser(user, activePackage) {
+  if (activePackage) return null;
+
+  const plan = user?.subscription?.billing?.planId;
+  if (plan && typeof plan === "object" && plan.name) return null;
+
+  if (user?.subscriptionStatus !== "free") return null;
+
+  if (!user?.subscription?.trial?.isClaimed) {
+    return "Begin with a 7-day free trial or subscribe now—Pilates, workouts, meal support & coaching. Cancel anytime.";
+  }
+
+  return "You’re on a free account; premium unlocks the full studio. Pick a plan below—stay as long as you love it.";
+}
+
 export default function SubscriptionPage() {
   const { user, refreshSession } = useAuth();
   const { get, post } = ApiFunction();
@@ -260,6 +413,9 @@ export default function SubscriptionPage() {
       ? user.recentPlans[user.recentPlans.length - 1]
       : null;
 
+  const currentPlanTitle = getCurrentPlanCardTitle(user, activePackage);
+  const newSubscriberTeaser = getNewSubscriberTeaser(user, activePackage);
+
   return (
     <div className="space-y-6 mb-20">
       <div>
@@ -279,15 +435,14 @@ export default function SubscriptionPage() {
             </div>
             <div>
               <h4 className="text-orange-800 font-bold text-lg mb-0.5">
-                Subscription Inactive
+                Subscription inactive
               </h4>
               <p className="text-orange-700 text-sm md:text-base">
-                Your premium access is currently{" "}
-                <span className="font-bold uppercase underline underline-offset-4 decoration-orange-300">
-                  {user?.subscriptionStatus}
+                Status:{" "}
+                <span className="font-semibold capitalize">
+                  {getInactiveBannerLabel(user?.subscriptionStatus)}
                 </span>
-                . Please select a plan below to renew your subscription and
-                unlock workouts, nutrition plans, and coaching.
+                . {getInactiveBannerBody(user?.subscriptionStatus)}
               </p>
             </div>
           </div>
@@ -296,40 +451,60 @@ export default function SubscriptionPage() {
 
       {/* Current Plan Card */}
       <Card className="border-none shadow-premium bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden">
-        <CardBody className="p-8 flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 space-y-3 text-center md:text-left">
-            <div className="flex flex-col md:flex-row items-center gap-3">
-              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">
-                {activePackage
-                  ? activePackage.name
-                  : user?.subscription?.billing?.planId?.name || "Free Trial"}
-              </h2>
-              <Chip
-                color={
-                  user?.subscriptionStatus === "active"
-                    ? "success"
-                    : user?.subscriptionStatus === "trialing"
-                      ? "warning"
-                      : user?.subscriptionStatus === "expired"
-                        ? "danger"
-                        : "primary"
-                }
-                size="sm"
-                variant="flat"
-              >
-                {user?.subscriptionStatus === "active"
-                  ? "ACTIVE PLAN"
-                  : user?.subscriptionStatus === "trialing"
-                    ? "ON TRIAL"
-                    : user?.subscriptionStatus === "expired"
-                      ? "EXPIRED"
-                      : "LIMITED ACCESS"}
-              </Chip>
-            </div>
+        <CardBody className="p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-10">
+            <div className="flex-1 min-w-0">
+              <div className="max-w-3xl space-y-2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-start">
+                  <h2 className="text-2xl font-black text-zinc-900 dark:text-white leading-tight min-w-0">
+                    {currentPlanTitle}
+                  </h2>
+                  <Chip
+                    className="flex-shrink-0 shadow-sm"
+                    color={
+                      user?.subscriptionStatus === "active"
+                        ? "success"
+                        : user?.subscriptionStatus === "trialing"
+                          ? "warning"
+                          : user?.subscriptionStatus === "expired"
+                            ? "danger"
+                            : user?.subscriptionStatus === "free"
+                              ? "default"
+                              : user?.subscriptionStatus === "canceled"
+                                ? "danger"
+                                : "primary"
+                    }
+                    size="sm"
+                    variant="flat"
+                  >
+                    {user?.subscriptionStatus === "active"
+                      ? "ACTIVE PLAN"
+                      : user?.subscriptionStatus === "trialing"
+                        ? "ON TRIAL"
+                        : user?.subscriptionStatus === "expired"
+                          ? "EXPIRED"
+                          : user?.subscriptionStatus === "free"
+                            ? "FREE"
+                            : user?.subscriptionStatus === "canceled"
+                              ? "CANCELED"
+                              : "LIMITED ACCESS"}
+                  </Chip>
+                </div>
+                {newSubscriberTeaser ? (
+                  <p className="text-sm md:text-base font-medium text-[#764979] dark:text-[#b89fc0] leading-relaxed text-start">
+                    {newSubscriberTeaser}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="mt-4 space-y-3 text-start max-w-3xl">
             {activePackage ? (
-              <div className="space-y-2 mt-2">
-                <p className="text-zinc-500 max-w-md text-sm">
-                  You are currently enjoying the {activePackage.name} benefits.
+              <div className="space-y-2">
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
+                  {getActivePackageSubtitle(
+                    activePackage,
+                    user?.subscriptionStatus,
+                  )}
                 </p>
                 <div className="flex flex-col gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400">
                   <p>
@@ -337,7 +512,19 @@ export default function SubscriptionPage() {
                     <span className="uppercase text-[#764979] font-bold">
                       {user?.subscriptionStatus === "trialing"
                         ? "TRIAL"
-                        : user?.subscriptionStatus || "Free"}
+                        : user?.subscriptionStatus === "free"
+                          ? "FREE"
+                          : user?.subscriptionStatus === "canceled"
+                            ? "CANCELED"
+                            : user?.subscriptionStatus === "trialing"
+                              ? "ON TRIAL"
+                              : user?.subscriptionStatus === "active"
+                                ? "ACTIVE"
+                                : user?.subscriptionStatus === "expired"
+                                  ? "EXPIRED"
+                                  : user?.subscriptionStatus === "paused"
+                                    ? "PAUSED"
+                                    : "LIMITED ACCESS"}
                     </span>
                   </p>
                   {user?.subscriptionStatus === "trialing" && (
@@ -386,39 +573,53 @@ export default function SubscriptionPage() {
                 </div>
               </div>
             ) : user?.subscription?.trial?.remainingDays > 0 ? (
-              <div className="space-y-4 mt-4">
-                <p className="text-zinc-500 max-w-md text-lg">
-                  {user?.subscriptionStatus === "canceled" && lastPackage
-                    ? `You canceled your ${lastPackage.name} plan, but still have ${user.subscription.trial.remainingDays} days of Free Trial remaining. Continue your subscription to keep your benefits seamlessly when the trial ends!`
-                    : "You are currently exploring the Butterfly Sanctuary on a Free Trial."}
+              <div className="space-y-3">
+                <p className="text-zinc-600 dark:text-zinc-400 text-base md:text-lg leading-relaxed">
+                  {getTrialPeriodMessage(user, lastPackage)}
                 </p>
                 <div className="flex flex-col gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  <p>
-                    Status:{" "}
-                    <span className="uppercase text-orange-500 font-bold">
-                      {user?.subscriptionStatus === "canceled"
-                        ? "Canceled (On Trial)"
-                        : "On Trial"}
-                    </span>
-                  </p>
-                  <p>
-                    Trial Remaining:{" "}
-                    <span className="text-orange-500 font-bold">
-                      {user.subscription.trial.remainingDays} Days
-                    </span>
-                  </p>
+                  {user?.subscriptionStatus !== "free" && (
+                    <p>
+                      Status:{" "}
+                      <span className="uppercase text-orange-500 font-bold">
+                        {user?.subscriptionStatus === "free"
+                          ? "FREE"
+                          : user?.subscriptionStatus === "canceled"
+                            ? "CANCELED"
+                            : user?.subscriptionStatus === "trialing"
+                              ? "ON TRIAL"
+                              : user?.subscriptionStatus === "active"
+                                ? "ACTIVE"
+                                : user?.subscriptionStatus === "expired"
+                                  ? "EXPIRED"
+                                  : user?.subscriptionStatus === "paused"
+                                    ? "PAUSED"
+                                    : "LIMITED ACCESS"}
+                      </span>
+                    </p>
+                  )}
+                  {user?.subscriptionStatus !== "free" && (
+                    <p>
+                      Trial Remaining:{" "}
+                      <span className="text-orange-500 font-bold">
+                        {user.subscription.trial.remainingDays} Days
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
-              <p className="text-zinc-500 max-w-md text-lg mt-4">
-                Unlock full power by upgrading to a pro plan today.
+              <p className="text-zinc-600 dark:text-zinc-400 text-base md:text-lg leading-relaxed">
+                {getNoTrialMessage(user?.subscriptionStatus)}
               </p>
             )}
-          </div>
-          <div className="flex gap-4 w-full md:w-auto">
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center w-full lg:w-auto lg:flex-shrink-0 lg:max-w-[280px]">
             {activePackage && user?.subscriptionStatus !== "canceled" ? (
               <Button
-                className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300  rounded-2xl flex-1 md:flex-none border border-zinc-200 dark:border-zinc-700"
+                className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-2xl w-full py-6 font-semibold border border-zinc-200 dark:border-zinc-700"
                 onClick={() => setIsCancelModalOpen(true)}
               >
                 Cancel Subscription
@@ -427,7 +628,7 @@ export default function SubscriptionPage() {
               user?.subscriptionStatus === "canceled" &&
               lastPackage ? (
               <Button
-                className="bg-[#764979] text-white rounded-2xl shadow-xl shadow-purple-500/20 flex-1 md:flex-none"
+                className="bg-[#764979] text-white rounded-2xl shadow-xl shadow-purple-500/30 w-full py-6 font-semibold"
                 isLoading={actionLoading}
                 onClick={() => handleUpgrade(lastPackage._id, false)}
               >
@@ -435,7 +636,7 @@ export default function SubscriptionPage() {
               </Button>
             ) : (
               <Button
-                className="bg-[#764979] text-white  rounded-2xl shadow-xl shadow-purple-500/20 flex-1 md:flex-none"
+                className="bg-[#764979] text-white rounded-2xl shadow-xl shadow-purple-500/30 w-full py-6 font-semibold"
                 onClick={() => setIsTrialModalOpen(true)}
               >
                 {!user?.subscription?.trial?.isClaimed
@@ -443,6 +644,7 @@ export default function SubscriptionPage() {
                   : "Upgrade Now"}
               </Button>
             )}
+            </div>
           </div>
         </CardBody>
       </Card>
@@ -510,13 +712,25 @@ export default function SubscriptionPage() {
                       }
                       color={isCurrent ? "default" : "primary"}
                       isDisabled={isCurrent && !isExpired}
-                      onClick={() => handleUpgrade(pkg._id)}
+                      onClick={() =>
+                        handleUpgrade(
+                          pkg._id,
+                          shouldStartTrialOnPlanClick({
+                            isExpired,
+                            isCurrent,
+                            subscriptionStatus: user?.subscriptionStatus,
+                            trialIsClaimed:
+                              user?.subscription?.trial?.isClaimed,
+                          }),
+                        )
+                      }
                     >
-                      {isExpired
-                        ? "Renew"
-                        : isCurrent
-                          ? "Current Plan"
-                          : "Upgrade"}
+                      {getAvailablePlanButtonLabel({
+                        isExpired,
+                        isCurrent,
+                        subscriptionStatus: user?.subscriptionStatus,
+                        trialIsClaimed: user?.subscription?.trial?.isClaimed,
+                      })}
                     </Button>
                   </div>
                 );

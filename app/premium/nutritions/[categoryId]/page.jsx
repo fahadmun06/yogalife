@@ -20,6 +20,14 @@ import PaginationComponent from "../../components/common/Pagination";
 
 import useMealApi from "@/hooks/useMealApi";
 
+function stripHtml(html) {
+  if (!html || typeof html !== "string") return "";
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default function NutritionsByCategoryPage() {
   const { categoryId } = useParams();
   const router = useRouter();
@@ -80,13 +88,13 @@ export default function NutritionsByCategoryPage() {
   const filteredMeals = useMemo(() => {
     if (!search) return meals;
 
+    const q = search.toLowerCase();
     return meals.filter(
       (m) =>
-        m.mealName.toLowerCase().includes(search.toLowerCase()) ||
+        m.mealName.toLowerCase().includes(q) ||
         (Array.isArray(m.ingredients) &&
-          m.ingredients.some((ing) =>
-            ing.toLowerCase().includes(search.toLowerCase()),
-          )),
+          m.ingredients.some((ing) => ing.toLowerCase().includes(q))) ||
+        stripHtml(m.content || "").toLowerCase().includes(q),
     );
   }, [meals, search]);
 
@@ -263,7 +271,7 @@ export default function NutritionsByCategoryPage() {
                             <h3 className="text-base font-medium text-[#4A3B4C] line-clamp-1 group-hover:text-[#6D735C] transition-colors leading-tight">
                               {meal.mealName}
                             </h3>
-                            <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-2">
+                            <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
                               <span>{meal.category?.name || "Recipe"}</span>
                               <span className="w-1 h-1 bg-slate-200 rounded-full" />
                               <span>
@@ -281,6 +289,11 @@ export default function NutritionsByCategoryPage() {
                                 </>
                               )}
                             </p>
+                            {meal.content?.trim() ? (
+                              <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-snug">
+                                {stripHtml(meal.content)}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       </CardBody>

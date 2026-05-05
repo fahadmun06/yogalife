@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@heroui/skeleton";
 
@@ -24,13 +24,51 @@ export default function ButterflySection() {
     loadButterfly();
   }, []);
 
+  const normalizedContent = useMemo(() => {
+    if (!data?.content || typeof window === "undefined") return data?.content || "";
+
+    const root = document.createElement("div");
+
+    root.innerHTML = data.content;
+
+    const allowedClasses = new Set([
+      "image",
+      "image-style-side",
+      "image-style-align-left",
+      "image-style-align-right",
+      "custom-button",
+    ]);
+
+    root.querySelectorAll("*").forEach((el) => {
+      el.removeAttribute("style");
+
+      const className = el.getAttribute("class");
+
+      if (className) {
+        const filtered = className
+          .split(/\s+/)
+          .filter((cls) => allowedClasses.has(cls))
+          .join(" ");
+
+        if (filtered) {
+          el.setAttribute("class", filtered);
+        } else {
+          el.removeAttribute("class");
+        }
+      }
+    });
+
+    return root.innerHTML;
+  }, [data?.content]);
+
   if (loading) {
     return (
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-6 max-w-4xl space-y-12">
-          <Skeleton className="h-24 w-full rounded-xl" />
-          <Skeleton className="h-[400px] w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container mx-auto px-6 max-w-4xl space-y-4">
+          <Skeleton className="h-10 w-3/4 max-w-md mx-auto rounded-lg" />
+          <Skeleton className="h-4 w-full rounded-lg" />
+          <Skeleton className="h-4 w-full rounded-lg" />
+          <Skeleton className="h-4 w-5/6 rounded-lg" />
         </div>
       </section>
     );
@@ -42,18 +80,50 @@ export default function ButterflySection() {
   }
 
   return (
-    <section className="py-24 bg-white overflow-hidden">
-      <div className="container mx-auto px-6 max-w-4xl dynamic-content-container">
+    <section className="py-16 md:py-24 bg-white overflow-visible">
+      <div className="container mx-auto px-6 max-w-4xl dynamic-content-container flow-root overflow-visible">
         <motion.div
-          dangerouslySetInnerHTML={{ __html: data.content }}
+          dangerouslySetInnerHTML={{ __html: normalizedContent }}
           animate={{ opacity: 1, y: 0 }}
-          className="prose prose-xl prose-purple max-w-none dynamic-content-wrapper"
+          className="prose prose-xl prose-purple max-w-none w-full dynamic-content-wrapper"
           initial={{ opacity: 0, y: 30 }}
           transition={{ duration: 0.8 }}
         />
-        <style jsx global>{`
+        <style>{`
+          .dynamic-content-container {
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 0 !important;
+          }
           .dynamic-content-wrapper {
-             color: #4a5568;
+            color: #4a5568;
+            display: flow-root;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0 !important;
+          }
+          .dynamic-content-wrapper * {
+            max-width: 100%;
+            box-sizing: border-box;
+            word-break: break-word;
+          }
+          /* Prevent pasted HTML (absolute/fixed elements) from escaping layout */
+          .dynamic-content-wrapper [style*="position:absolute"],
+          .dynamic-content-wrapper [style*="position: absolute"],
+          .dynamic-content-wrapper [style*="position:fixed"],
+          .dynamic-content-wrapper [style*="position: fixed"] {
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            left: auto !important;
+          }
+          .dynamic-content-wrapper [style*="transform"] {
+            transform: none !important;
+          }
+          .dynamic-content-wrapper > * {
+            clear: both;
           }
           .dynamic-content-wrapper h2 {
              color: #4a3b4c !important;
@@ -69,6 +139,11 @@ export default function ButterflySection() {
           .dynamic-content-wrapper figure {
             margin: 2rem auto;
             display: table;
+          }
+          .dynamic-content-wrapper::after {
+            content: "";
+            display: block;
+            clear: both;
           }
           .dynamic-content-wrapper figure.image-style-side {
             float: right;

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import YogasticFooter from "@/components/NewSimpleUI/YogasticFooter";
@@ -73,7 +73,11 @@ export default function MainLayout({ children }) {
         user={user}
       />
       <div className="relative text-black">
-        {isDashboard || restrictRoute.includes(pathname) ? null : <Navbar />}
+        {isDashboard || restrictRoute.includes(pathname) ? null : (
+          <Suspense fallback={<div aria-hidden className="h-16 w-full shrink-0" />}>
+            <Navbar />
+          </Suspense>
+        )}
         <main>{children}</main>
         {isDashboard ||
         pathname.startsWith("/premium") ||

@@ -6,7 +6,6 @@ import ButterflySection from "@/components/NewSimpleUI/ButterflySection";
 import ContactSectionNew from "@/components/NewSimpleUI/ContactSectionNew";
 import Testimonials from "@/components/Testimonials";
 import Blog from "@/components/Blog";
-import RetreatHero from "@/components/RetreatHero";
 import NewRetroSection from "@/components/NewSimpleUI/NewRetroSection";
 import TransformationGallery from "@/components/TransformationGallery";
 import BooksGallery from "@/components/BooksGallery";
@@ -30,8 +29,7 @@ export default function Home() {
       <Testimonials isPage={false} />
       <TransformationGallery />
       {/* <BooksGallery /> */}
-      <RetreatHero />
-      <Blog />
+      {/* <Blog /> */}
     </div>
   );
 }

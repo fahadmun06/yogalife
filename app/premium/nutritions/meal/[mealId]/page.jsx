@@ -9,7 +9,6 @@ import {
   Calendar,
   Utensils,
   AlertCircle,
-  Hash,
 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -17,6 +16,30 @@ import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 
 import useMealApi from "@/hooks/useMealApi";
+
+const stripHtml = (value = "") =>
+  String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getLegacyLines = (ingredients) => {
+  if (Array.isArray(ingredients)) {
+    return ingredients
+      .flatMap((item) => String(item || "").split(/\r?\n/))
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof ingredients === "string") {
+    return ingredients
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 export default function MealDetailsPage() {
   const { mealId } = useParams();
@@ -37,6 +60,9 @@ export default function MealDetailsPage() {
       setMeal(res.data);
     }
   };
+
+  const hasCkContent = Boolean(stripHtml(meal?.content || ""));
+  const legacyLines = getLegacyLines(meal?.ingredients);
 
   if (loading && !meal) {
     return (
@@ -168,44 +194,40 @@ export default function MealDetailsPage() {
               </div>
             </div>
 
-            {/* Ingredients Section */}
+            {/* Recipe details (CKEditor HTML) or legacy ingredients */}
             <div className="bg-white p-8 rounded-[40px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-50">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 bg-[#F8F9F4] rounded-2xl">
                   <Utensils className="text-[#6D735C]" size={24} />
                 </div>
                 <h3 className="text-xl font-bold text-[#4A3B4C]">
-                  Ingredients
+                  {meal?.content?.trim() ? "Recipe & details" : "Ingredients"}
                 </h3>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                {Array.isArray(meal?.ingredients) &&
-                meal.ingredients.length > 0 ? (
-                  meal.ingredients.map((ing, i) => (
-                    <Chip
-                      key={i}
-                      className="bg-slate-50 capitalize rounded-xl text-slate-600 border-none px-4 py-2 h-auto text-sm font-medium max-w-full"
-                      classNames={{
-                        content: "whitespace-normal break-words",
-                      }}
-                      // startContent={
-                      //   <Hash
-                      //     className="text-[#6D735C]/50 shrink-0"
-                      //     size={14}
-                      //   />
-                      // }
-                      variant="flat"
-                    >
-                      {ing}
-                    </Chip>
-                  ))
-                ) : (
-                  <p className="text-slate-400 italic text-sm">
-                    No ingredients specified for this recipe.
-                  </p>
-                )}
-              </div>
+              {hasCkContent ? (
+                <div
+                  className="meal-detail-html max-w-none text-slate-600 text-sm leading-relaxed [&_img]:max-w-full [&_img]:rounded-xl [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-[#6D735C] [&_a]:underline [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-bold [&_blockquote]:border-l-4 [&_blockquote]:border-[#6D735C]/40 [&_blockquote]:pl-3 [&_blockquote]:italic"
+                  dangerouslySetInnerHTML={{ __html: meal.content }}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {legacyLines.length > 0 ? (
+                    legacyLines.map((line, i) => (
+                      <div
+                        key={i}
+                        className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-slate-700 text-[15px] leading-snug"
+                      >
+                        {line}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-400 italic text-sm">
+                      No recipe details for this meal yet.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Preparation/Tip Suggestion */}

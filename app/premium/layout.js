@@ -1,6 +1,8 @@
+import { Suspense } from "react";
+import { Poppins } from "next/font/google";
+
 import SimpleFooter from "@/components/dashboard/SimpleFooter";
 
-import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -15,7 +17,17 @@ export const metadata = {
 export default function PremiumLayout({ children }) {
   return (
     <div className={`flex flex-col min-h-screen ${poppins.className}`}>
-      <div className="flex-1">{children}</div>
+      <div className="flex-1">
+        <Suspense
+          fallback={
+            <div className="min-h-[40vh] flex items-center justify-center bg-white text-slate-400 text-sm">
+              Loading…
+            </div>
+          }
+        >
+          {children}
+        </Suspense>
+      </div>
       <SimpleFooter />
     </div>
   );

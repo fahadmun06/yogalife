@@ -56,29 +56,75 @@ export default function PremiumHero() {
           initial={{ opacity: 0, x: -50 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Logo at the top */}
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 relative ml-[-10px] md:ml-[-20px]"
-            initial={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <img
-              alt="Butterfly Sanctuary Logo"
-              className="rounded-2xl w-full max-w-[320px] sm:max-w-[420px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain object-left"
-              src="/premium-hero.png"
-              style={{
-                mixBlendMode: "multiply", // Blend with the background if there's any white
-              }}
-            />
-          </motion.div>
+          {banner?.premiumLeftContentMode === "custom" ? (
+            <>
+              {banner.premiumCustomTitle ? (
+                <motion.h1
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-3xl sm:text-4xl md:text-5xl font-playfair font-black text-[#4A3B4C] leading-tight max-w-xl"
+                  initial={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.6, delay: 0.15 }}
+                >
+                  {banner.premiumCustomTitle}
+                </motion.h1>
+              ) : null}
+              {banner.premiumCustomDescription ? (
+                <motion.p
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-base md:text-lg text-[#4A3B4C]/85 max-w-xl leading-relaxed whitespace-pre-wrap font-poppins"
+                  initial={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.6, delay: 0.25 }}
+                >
+                  {banner.premiumCustomDescription}
+                </motion.p>
+              ) : null}
+              {(banner.premiumCtaText || banner.premiumCtaRoute) && (
+                <Button
+                  className="bg-[#6D735C] text-white px-8 py-7 rounded-xl font-medium text-lg hover:bg-[#5a604b] transition-all shadow-md mt-2 font-poppins"
+                  onPress={() => {
+                    const raw =
+                      banner.premiumCtaRoute?.trim() || "/premium/workouts";
 
-          <Button
-            className="bg-[#6D735C] text-white px-8 py-7 rounded-xl font-medium text-lg hover:bg-[#5a604b] transition-all shadow-md mt-4 font-poppins"
-            onPress={() => router.push("/premium/workouts")}
-          >
-            View Workouts
-          </Button>
+                    if (
+                      raw.startsWith("http://") ||
+                      raw.startsWith("https://")
+                    ) {
+                      window.open(raw, "_blank", "noopener,noreferrer");
+                    } else {
+                      router.push(raw.startsWith("/") ? raw : `/${raw}`);
+                    }
+                  }}
+                >
+                  {banner.premiumCtaText?.trim() || "View Workouts"}
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 relative ml-[-10px] md:ml-[-20px]"
+                initial={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <img
+                  alt="Butterfly Sanctuary Logo"
+                  className="rounded-2xl w-full max-w-[320px] sm:max-w-[420px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain object-left"
+                  src="/premium-hero.png"
+                  style={{
+                    mixBlendMode: "multiply",
+                  }}
+                />
+              </motion.div>
+
+              <Button
+                className="bg-[#6D735C] text-white px-8 py-7 rounded-xl font-medium text-lg hover:bg-[#5a604b] transition-all shadow-md mt-4 font-poppins"
+                onPress={() => router.push("/premium/workouts")}
+              >
+                View Workouts
+              </Button>
+            </>
+          )}
         </motion.div>
 
         {/* Right Image/Video Placeholder */}

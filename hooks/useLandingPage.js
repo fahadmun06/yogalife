@@ -100,9 +100,17 @@ export const useLandingPage = () => {
     );
   };
 
-  const getBlogs = async () => {
-    if (landingData.blog && landingData.blogSettings)
+  const getBlogs = async (options = {}) => {
+    const forceRefresh =
+      options === true || options?.forceRefresh === true;
+
+    if (
+      !forceRefresh &&
+      landingData.blog &&
+      landingData.blogSettings
+    ) {
       return { blogs: landingData.blog, settings: landingData.blogSettings };
+    }
 
     try {
       const [blogsRes, settingsRes] = await Promise.all([

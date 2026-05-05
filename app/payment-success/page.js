@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -15,63 +15,96 @@ export default function SuccessPage() {
   const { post } = ApiFunction();
   const [updating, setUpdating] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
+  const [skipSubscriptionSuccessUi, setSkipSubscriptionSuccessUi] =
+    useState(false);
+  const [bookError, setBookError] = useState(null);
+  const ranRef = useRef(false);
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLScfDRhlC2YxHuHLhJ1edCF-mwxvctWmpDO_fhBSAi-rXlrasA/viewform";
 
   useEffect(() => {
-    const confirmSubscription = async () => {
+    if (!user || ranRef.current) return;
+    ranRef.current = true;
+
+    const run = async () => {
       try {
-        const sessionId = new URLSearchParams(window.location.search).get(
-          "session_id",
-        );
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get("session_id");
+        const kind = params.get("kind");
 
-        if (sessionId) {
-          console.log("Confirming subscription for session:", sessionId);
-          const response = await post("/stripe/confirm-subscription", {
-            session_id: sessionId,
-            type: "subscription",
-          });
-
-          if (response.success) {
-            toast.success("Subscription confirmed!");
-            // Refresh user session to get updated subscription status
-            if (refreshSession) await refreshSession();
-            setUpdating(false);
-
-            return;
-          } else {
-            console.error("Confirmation failed:", response.error);
-            toast.error(response.error || "Failed to confirm subscription");
-          }
-        } else {
-          console.warn("No session ID found in URL");
+        if (!sessionId) {
+          setUpdating(false);
+          return;
         }
 
+        if (kind === "book") {
+          setSkipSubscriptionSuccessUi(true);
+          const response = await post("/stripe/confirm-subscription", {
+            session_id: sessionId,
+          });
+
+          if (response.success && response.data?.redirectUrl != null) {
+            toast.success("Book unlocked!");
+            if (refreshSession) await refreshSession();
+            const url = response.data.redirectUrl;
+            if (url.startsWith("http://") || url.startsWith("https://")) {
+              window.location.replace(url);
+            } else {
+              router.replace(url);
+            }
+            return;
+          }
+
+          const msg =
+            response?.message ||
+            response?.error ||
+            "Could not confirm purchase";
+          toast.error(msg);
+          setBookError(msg);
+          setSkipSubscriptionSuccessUi(false);
+          setUpdating(false);
+          return;
+        }
+
+        const response = await post("/stripe/confirm-subscription", {
+          session_id: sessionId,
+          type: "subscription",
+        });
+
+        if (response.success) {
+          toast.success("Subscription confirmed!");
+          if (refreshSession) await refreshSession();
+          setUpdating(false);
+          return;
+        }
+
+        toast.error(response.error || "Failed to confirm subscription");
         setUpdating(false);
       } catch (error) {
         console.error("Error in confirmation effect:", error);
         toast.error("An unexpected error occurred during confirmation");
+        setBookError("Something went wrong confirming your payment.");
+        setSkipSubscriptionSuccessUi(false);
         setUpdating(false);
       }
     };
 
-    if (user) {
-      confirmSubscription();
-    }
-  }, []);
+    run();
+  }, [user, post, refreshSession, router]);
 
   useEffect(() => {
-    if (!updating) {
-      setRedirecting(true);
-      window.open(FORM_URL, "_blank", "noopener,noreferrer");
+    if (bookError) return;
+    if (skipSubscriptionSuccessUi || updating) return;
 
-      const timer = setTimeout(() => {
-        router.push("/dashboard/subscription");
-      }, 3000);
+    setRedirecting(true);
+    window.open(FORM_URL, "_blank", "noopener,noreferrer");
 
-      return () => clearTimeout(timer);
-    }
-  }, [updating, router]);
+    const timer = setTimeout(() => {
+      router.push("/dashboard/subscription");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [updating, skipSubscriptionSuccessUi, bookError, router]);
 
   const handleOpenForm = () => {
     window.open(FORM_URL, "_blank", "noopener,noreferrer");
@@ -81,13 +114,28 @@ export default function SuccessPage() {
     }, 3000);
   };
 
-  if (updating) {
+  if (updating || skipSubscriptionSuccessUi) {
     return (
       <PageLoader
         isVisible={true}
         message="Processing your payment..."
         overlay={true}
       />
+    );
+  }
+
+  if (bookError) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-8 text-center font-poppins">
+        <p className="text-red-600 mb-4 max-w-md">{bookError}</p>
+        <button
+          type="button"
+          className="text-primary underline"
+          onClick={() => router.push("/")}
+        >
+          Back to home
+        </button>
+      </div>
     );
   }
 

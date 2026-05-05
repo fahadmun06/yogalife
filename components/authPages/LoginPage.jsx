@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, EyeOff, Eye } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [passwordShown, setPasswordShown] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
 
   const togglePasswordVisibility = () => {
@@ -30,6 +31,20 @@ export default function LoginPage() {
       const result = await login({ email, password });
 
       if (result?.success) {
+        const rawReturn = searchParams.get("returnUrl");
+        if (rawReturn) {
+          try {
+            const decoded = decodeURIComponent(rawReturn);
+            const url = new URL(decoded, window.location.origin);
+            if (url.origin === window.location.origin) {
+              router.push(url.pathname + url.search + url.hash);
+              return;
+            }
+          } catch {
+            /* fall through */
+          }
+        }
+
         const subStatus = result.data?.user?.subscriptionStatus;
 
         if (subStatus !== "free") {

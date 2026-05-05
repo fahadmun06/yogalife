@@ -67,7 +67,7 @@ export default function RetreatHero() {
   }
 
   return (
-    <section className="py-16 bg-white overflow-hidden" id="wellness-retreat">
+    <section className="py-16 bg-white overflow-hidden">
       <div className="container mx-auto px-6 max-w-7xl">
         <div
           dangerouslySetInnerHTML={{ __html: content?.content }}

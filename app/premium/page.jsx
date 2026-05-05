@@ -17,7 +17,7 @@ import {
   Eye,
   Pin,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { Skeleton } from "@heroui/skeleton";
@@ -34,9 +34,29 @@ import { AlertCircle } from "lucide-react";
 import useWorkoutApi from "@/hooks/useWorkoutApi";
 import useMealApi from "@/hooks/useMealApi";
 import PremiumHero from "@/components/premium-user-componenets/Hero";
+import BlogSection from "@/components/Blog";
+
+const PREMIUM_TAB_KEYS = [
+  "workouts",
+  "nutrition",
+  "books",
+  "health-coaching",
+];
 
 export default function PremiumLandingPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const premiumTabParam = searchParams.get("tab");
+  const selectedPremiumTab = PREMIUM_TAB_KEYS.includes(premiumTabParam)
+    ? premiumTabParam
+    : "workouts";
+
+  const setPremiumTab = (key) => {
+    const k = String(key);
+
+    router.replace(`${pathname}?tab=${k}`, { scroll: false });
+  };
   const {
     fetchWorkouts,
     fetchCategories,
@@ -305,13 +325,15 @@ export default function PremiumLandingPage() {
           classNames={{
             base: "w-full flex justify-center mt-3 mb-3",
             tabList:
-              "gap-12 w-full justify-center relative rounded-none p-0 pb-2",
+              "gap-6 md:gap-10 lg:gap-12 w-full justify-center relative rounded-none p-0 pb-2 flex-wrap",
             cursor: "w-[150%] bg-[#6D735C]",
             tab: "max-w-fit px-0 h-14",
             tabContent:
               "font-poppins text-lg font-medium text-[#4A3B4C]/60 group-data-[selected=true]:text-[#6D735C] uppercase",
           }}
+          selectedKey={selectedPremiumTab}
           variant="underlined"
+          onSelectionChange={(key) => setPremiumTab(key)}
         >
           <Tab key="workouts" title="Workouts">
             {loading ? (
@@ -864,6 +886,12 @@ export default function PremiumLandingPage() {
                   Explore Holistic Nutrition Hub
                 </a>
               </div>
+            </div>
+          </Tab>
+
+          <Tab key="books" title="Books">
+            <div className="mt-8 text-left">
+              <BlogSection embedded />
             </div>
           </Tab>
 

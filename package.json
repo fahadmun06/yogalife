@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 4000 --turbopack",
+    "dev:webpack": "next dev --port 4000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --fix"
@@ -42,6 +43,7 @@
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.26",
     "@reduxjs/toolkit": "^2.11.2",
+    "@stripe/react-stripe-js": "^3.10.0",
     "@stripe/stripe-js": "^7.9.0",
     "axios": "^1.13.6",
     "clsx": "2.1.1",

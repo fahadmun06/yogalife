@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Dropdown,
   DropdownTrigger,
@@ -17,7 +17,8 @@ import {
   DrawerBody,
   DrawerHeader,
 } from "@heroui/drawer";
-import { LogOut, Settings, ChevronDown, Menu, X } from "lucide-react";
+import { LogOut, Settings, ChevronDown, Menu } from "lucide-react";
+
 import NotificationBell from "./allComponents/notifications/NotificationBell";
 import SearchModal from "./SearchModal";
 
@@ -33,6 +34,7 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // console.log("user", user);
 
@@ -77,10 +79,34 @@ export default function Navbar() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const isPremium = user && user?.subscriptionStatus !== "free";
+
+  const isPremiumNavLinkActive = (href) => {
+    if (!href || typeof href !== "string") return false;
+    if (!isPremium) return pathname === href;
+
+    if (href === "/premium") {
+      const tab = searchParams.get("tab") || "workouts";
+
+      return pathname === "/premium" && tab === "workouts";
+    }
+
+    if (href.startsWith("/premium?")) {
+      const q = new URLSearchParams(href.split("?")[1] || "");
+      const wantTab = q.get("tab") || "workouts";
+
+      return (
+        pathname === "/premium" &&
+        (searchParams.get("tab") || "workouts") === wantTab
+      );
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   const isPremiumUser = pathname.startsWith("/premium");
   // console.log("isPremiumUser", isPremiumUser);
@@ -90,6 +116,7 @@ export default function Navbar() {
     ? [
         { label: "Home", href: "/premium" },
         { label: "Your Studio", href: "/premium/workouts" },
+        { label: "Books", href: "/premium?tab=books" },
         { label: "Search", onClick: () => setSearchModalOpen(true) },
         { label: "Account", href: "/dashboard/profile" },
       ]
@@ -110,7 +137,7 @@ export default function Navbar() {
             { label: "Books", href: "/books", description: "Our books" },
           ],
         },
-        { label: "Wellness Retreat ", href: "/#wellness-retreat" },
+        { label: "Wellness Retreat ", href: "/wellness-retreat" },
         { label: "Contact", href: "/contact" },
       ];
 
@@ -228,7 +255,7 @@ export default function Navbar() {
                   <Link
                     key={item.label}
                     className={`px-3 py-2 text-[17px] font-medium relative group rounded-lg transition-all duration-300 flex items-center gap-2 ${
-                      isPremiumUser && pathname === item.href
+                      isPremiumUser && isPremiumNavLinkActive(item.href)
                         ? "text-[#6D735C]"
                         : scrolled
                           ? "text-white hover:bg-white/10"
@@ -239,7 +266,7 @@ export default function Navbar() {
                     {item.label}
                     <span
                       className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 transition-all duration-300 ${
-                        isPremiumUser && pathname === item.href
+                        isPremiumUser && isPremiumNavLinkActive(item.href)
                           ? "w-3/4 bg-[#6D735C]"
                           : "w-0 bg-gradient-to-r from-primary to-white group-hover:w-3/4"
                       }`}
@@ -256,8 +283,8 @@ export default function Navbar() {
                     <div className="flex gap-4 items-center">
                       <NotificationBell />
                       <Dropdown
-                        placement="bottom-end"
                         className="font-poppins cursor-pointer"
+                        placement="bottom-end"
                       >
                         <DropdownTrigger>
                           <Avatar
@@ -335,8 +362,8 @@ export default function Navbar() {
         backdrop="blur"
         className="bg-white/95 backdrop-blur-xl border-l border-slate-200"
         isOpen={mobileMenuOpen}
-        onOpenChange={setMobileMenuOpen}
         placement="right"
+        onOpenChange={setMobileMenuOpen}
       >
         <DrawerContent>
           {(onClose) => (
@@ -434,7 +461,7 @@ export default function Navbar() {
                       <Link
                         key={item.label}
                         className={`flex items-center px-5 py-4 rounded-2xl transition-all duration-300 font-semibold text-lg mb-1 ${
-                          isPremiumUser && pathname === item.href
+                          isPremiumUser && isPremiumNavLinkActive(item.href)
                             ? "bg-primary/10 text-primary border border-primary/20"
                             : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                         }`}
